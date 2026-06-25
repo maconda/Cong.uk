@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Cong.uk 中文个人主页，展示摄影、视频、分享和联系方式。">
+    <meta name="color-scheme" content="light dark">
+    <title>Cong.uk | 幸运降临</title>
+    <script>
+      (() => {
+        const storedTheme = localStorage.getItem("site-theme");
+        const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        document.documentElement.dataset.theme = storedTheme || systemTheme;
+      })();
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">跳到主要内容</a>
+    <div class="site-shell">
+      <aside class="sidebar" aria-label="网站导航">
+        <a class="identity" href="#articles" aria-label="Alano 幸运降临首页">
+          <span class="identity__name">Alano</span>
+          <span class="identity__chinese">幸运降临</span>
+        </a>
+
+        <button class="theme-pull" type="button" aria-label="切换暗夜模式" aria-pressed="false">
+          <svg class="theme-pull__line" viewBox="0 0 44 72" aria-hidden="true" focusable="false">
+            <path class="theme-pull__cord-path" d="M22 0 C22.6 22 21.4 50 22 72" />
+          </svg>
+          <span class="theme-pull__handle" aria-hidden="true"></span>
+          <span class="visually-hidden">切换暗夜模式</span>
+        </button>
+
+        <button class="mobile-menu-toggle" type="button" aria-expanded="false">菜单</button>
+
+        <nav class="site-nav">
+          <div class="project-links">
+            <a href="#images">图片</a>
+            <a href="#videos">视频</a>
+            <a href="#articles" aria-current="page">分享</a>
+          </div>
+
+          <div class="utility-links">
+            <a href="#about">关于</a>
+            <a href="#contact">联系</a>
+          </div>
+        </nav>
+      </aside>
+
+      <main class="content" id="main-content">
+        <section class="page-section" id="images" data-page aria-labelledby="images-title" hidden>
+          <article class="gallery-page" aria-label="图片">
+            <header class="gallery-index-header">
+              <p class="gallery-index-kicker">Photo Index · 10 images</p>
+              <h1 id="images-title">图片</h1>
+              <p>把日常留在光里。</p>
+            </header>
+
+            <div class="gallery-frame">
+              <div class="gallery-image-wrap">
+                <img class="artwork-image" src="https://pub-87e925c7796a4e538d6501e03f59add6.r2.dev/photo/P1.JPG" alt="">
+                <button class="gallery-image-hit gallery-image-hit--previous" type="button" aria-label="上一张图片"></button>
+                <button class="gallery-image-hit gallery-image-hit--next" type="button" aria-label="下一张图片"></button>
+                <span class="image-cursor" aria-hidden="true">→</span>
+              </div>
+
+              <div class="mobile-image-list" aria-label="图片列表"></div>
+
+              <section class="gallery-text" aria-label="图片文字">
+                <div class="river-text-column">
+                  <h2>Photo Notes</h2>
+                </div>
+              </section>
+            </div>
+          </article>
+        </section>
+
+        <section class="gallery-viewer" aria-label="图片查看器" aria-hidden="true">
+          <aside class="gallery-viewer__rail" aria-label="查看器分类">
+            <button class="gallery-viewer__back" type="button" data-viewer-close>返回</button>
+            <nav class="gallery-viewer__nav" aria-label="图片分类">
+              <span>精选</span>
+              <span>最新</span>
+              <span>随览</span>
+              <span>附近</span>
+              <span>远方</span>
+              <span class="is-current">发现</span>
+            </nav>
+          </aside>
+
+          <div class="gallery-viewer__stage">
+            <header class="gallery-viewer__toolbar">
+              <button type="button" class="gallery-viewer__icon-button" data-viewer-previous aria-label="上一张">‹</button>
+              <button type="button" class="gallery-viewer__icon-button" data-viewer-next aria-label="下一张">›</button>
+              <button type="button" class="gallery-viewer__icon-button" data-viewer-close aria-label="关闭">×</button>
+            </header>
+
+            <figure class="gallery-viewer__figure">
+              <img src="" alt="">
+            </figure>
+
+            <footer class="gallery-viewer__metadata" aria-label="图片参数">
+              <div class="gallery-viewer__rating" aria-label="评级">
+                <span>评级</span>
+                <strong>★★★★☆</strong>
+              </div>
+              <dl>
+                <div>
+                  <dt>名称</dt>
+                  <dd data-viewer-title></dd>
+                </div>
+                <div>
+                  <dt>画面</dt>
+                  <dd data-viewer-description></dd>
+                </div>
+                <div>
+                  <dt>尺寸</dt>
+                  <dd data-viewer-size>读取中</dd>
+                </div>
+                <div>
+                  <dt>地点</dt>
+                  <dd data-viewer-location>未记录</dd>
+                </div>
+                <div>
+                  <dt>相机</dt>
+                  <dd data-viewer-camera>未记录</dd>
+                </div>
+                <div>
+                  <dt>镜头</dt>
+                  <dd data-viewer-lens>未记录</dd>
+                </div>
+              </dl>
+            </footer>
+          </div>
+        </section>
+
+        <section class="page-section" id="videos" data-page aria-labelledby="videos-title" hidden>
+          <header class="page-header video-header">
+            <h1 id="videos-title">视频</h1>
+            <p class="video-intro">这里收集我感兴趣的视频、影像灵感和外部平台内容。</p>
+          </header>
+
+          <div class="video-page" aria-label="视频栏目">
+            <section class="video-section" aria-labelledby="featured-video-title">
+              <p class="video-section-label">精选视频</p>
+              <article class="featured-video">
+                <button
+                  class="featured-video__media video-media"
+                  type="button"
+                  data-video-embed-toggle
+                  data-embed-src="https://player.bilibili.com/player.html?bvid=BV1dQ4y1a7J4&amp;cid=462590117&amp;page=1&amp;autoplay=0"
+                  data-embed-title="暴躁“老哥”"
+                  aria-label="播放暴躁“老哥”"
+                >
+                  <img
+                    src="https://i2.hdslb.com/bfs/archive/7dac1b5fd61e56b9aa416e201d7f1445560924a4.jpg"
+                    alt="暴躁“老哥”视频封面"
+                    loading="lazy"
+                    data-video-thumb
+                  >
+                  <span class="video-media__fallback" aria-hidden="true"></span>
+                  <span class="video-media__play" aria-hidden="true">播放预览</span>
+                </button>
+
+                <div class="featured-video__body">
+                  <div class="video-meta">
+                    <span class="video-pill">Bilibili</span>
+                    <span>00:27</span>
+                  </div>
+                  <h2 id="featured-video-title">暴躁“老哥”</h2>
+                  <p>嵌入播放来自哔哩哔哩。点击封面可在本站轻量预览，也可以直接前往外部平台观看。</p>
+                  <a class="video-open-link" href="https://www.bilibili.com/video/BV1dQ4y1a7J4/" target="_blank" rel="noopener noreferrer">在 Bilibili 打开</a>
+                </div>
+              </article>
+
+              <div class="video-embed-panel" data-video-embed-panel hidden>
+                <iframe
+                  title=""
+                  src=""
+                  allow="fullscreen; picture-in-picture"
+                  allowfullscreen
+                  loading="lazy"
+                ></iframe>
+              </div>
+            </section>
+
+            <section class="video-section" aria-labelledby="more-videos-title">
+              <div class="video-section-heading">
+                <p class="video-section-label">更多视频</p>
+                <h2 id="more-videos-title">外部平台内容</h2>
+              </div>
+
+              <div class="video-grid" aria-label="更多视频列表">
+                <a class="video-card" href="https://www.bilibili.com/video/BV1dQ4y1a7J4/" target="_blank" rel="noopener noreferrer">
+                  <span class="video-card__media video-media">
+                    <img
+                      src="https://i2.hdslb.com/bfs/archive/7dac1b5fd61e56b9aa416e201d7f1445560924a4.jpg"
+                      alt="暴躁“老哥”视频封面"
+                      loading="lazy"
+                      data-video-thumb
+                    >
+                    <span class="video-media__fallback" aria-hidden="true"></span>
+                  </span>
+                  <span class="video-card__body">
+                    <span class="video-meta">
+                      <span class="video-pill">Bilibili</span>
+                      <span>00:27</span>
+                    </span>
+                    <strong>暴躁“老哥”</strong>
+                    <span class="video-card__description">来自哔哩哔哩的短视频预览，适合快速打开外部平台观看。</span>
+                  </span>
+                </a>
+
+                <a class="video-card" href="https://youtu.be/qWasfMjE7SA" target="_blank" rel="noopener noreferrer">
+                  <span class="video-card__media video-media">
+                    <img
+                      src="https://img.youtube.com/vi/qWasfMjE7SA/hqdefault.jpg"
+                      alt="YouTube 视频封面"
+                      loading="lazy"
+                      data-video-thumb
+                    >
+                    <span class="video-media__fallback" aria-hidden="true"></span>
+                  </span>
+                  <span class="video-card__body">
+                    <span class="video-meta">
+                      <span class="video-pill">YouTube</span>
+                    </span>
+                    <strong>YouTube 视频</strong>
+                    <span class="video-card__description">外部平台视频索引，点击卡片会在新标签页中打开 YouTube。</span>
+                  </span>
+                </a>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <section class="page-section is-active" id="articles" data-page aria-labelledby="articles-title">
+          <header class="page-header">
+            <h1 id="articles-title">分享</h1>
+          </header>
+
+          <div class="empty-state">暂无分享，之后会放一些杂志、新闻与链接摘录。</div>
+        </section>
+
+        <section class="page-section text-page" id="about" data-page aria-labelledby="about-title" hidden>
+          <header class="page-header">
+            <h1 id="about-title">关于</h1>
+          </header>
+
+          <div class="about-copy">
+            <p>我长期在工程现场、供应链和客户需求之间工作。</p>
+            <p>过去的经历横跨设备安装调试、售后支持、棉纱贸易跟单、OEM 项目管理、质量跟进和工业自控设备售前支持。这些经历让我更擅长从真实业务里发现问题，把复杂流程拆清楚，再推动事情一步步落地。</p>
+            <p>我喜欢把零散信息整理成结构，把模糊需求转化成可执行的方案。无论是客户沟通、现场协调、数据统计还是跨部门协作，我都希望自己是那个能让事情继续向前推进的人。</p>
+            <p>工作之外，我喜欢摄影和旅行。镜头让我观察城市、人物和生活里的细节，也提醒我保持好奇、行动力和稳定输出。</p>
+          </div>
+        </section>
+
+        <section class="page-section text-page" id="contact" data-page aria-labelledby="contact-title" hidden>
+          <header class="page-header">
+            <h1 id="contact-title">联系</h1>
+          </header>
+
+          <div class="contact-links" aria-label="联系方式">
+            <a class="contact-link" href="https://space.bilibili.com/20221512?spm_id_from=333.1007.0.0" target="_blank" rel="noopener noreferrer" aria-label="哔哩哔哩">
+              <img src="/icon/bilibili.png" alt="哔哩哔哩">
+            </a>
+            <a class="contact-link" href="mailto:nour109551@gmail.com" aria-label="邮箱">
+              <img src="/icon/email.png" alt="邮箱">
+            </a>
+            <a class="contact-link" href="https://t.me/JFNemo" target="_blank" rel="noopener noreferrer" aria-label="Telegram">
+              <img src="/icon/telegram.png" alt="Telegram">
+            </a>
+            <a class="contact-link" href="https://x.com/BorealTing" target="_blank" rel="noopener noreferrer" aria-label="X">
+              <img src="/icon/twitter.png" alt="X">
+            </a>
+            <a class="contact-link" href="https://work.weixin.qq.com/?from=user_h5" target="_blank" rel="noopener noreferrer" aria-label="微信">
+              <img src="/icon/wechat.png" alt="微信">
+            </a>
+            <a class="contact-link" href="https://www.youtube.com/@YTCong" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
+              <img src="/icon/youtube.png" alt="YouTube">
+            </a>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div class="site-copyright">版权所有 © 2026 Alano 幸运降临</div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

@@ -1,0 +1,6 @@
+tunnel: 0a818f01-3021-45d9-ba85-32946a96ba19
+credentials-file: C:\Users\Sugar\.cloudflared\0a818f01-3021-45d9-ba85-32946a96ba19.json
+ingress:
+  - hostname: remotewin.cong.uk
+    service: http://localhost:8080
+  - service: http_status:404

@@ -1,0 +1,27 @@
+node_modules/
+dist/
+test-results/
+.vite/
+
+*.log
+*.err.log
+
+.env
+.env.*
+!.env.example
+
+.DS_Store
+Thumbs.db
+
+# Embedded git repos
+cong.uk/.git/
+
+# IDE
+.vscode/
+.idea/
+
+# OS files
+Thumbs.db
+
+# Conflict files
+*conflict*
