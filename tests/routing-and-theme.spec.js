@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 
 test("normalizes hash routes without scrolling", async ({ page }) => {
-  await page.goto("/#images", { waitUntil: "networkidle" });
+  await page.goto("/#images", { waitUntil: "domcontentloaded" });
 
   await expect(page).toHaveURL(/page=images/);
 
@@ -14,9 +14,23 @@ test("normalizes hash routes without scrolling", async ({ page }) => {
   expect(state.activePage).toBe("images");
 });
 
+test("opens the image page by default", async ({ page }) => {
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+
+  await expect(page).toHaveURL(/page=images/);
+
+  const state = await page.evaluate(() => ({
+    activePage: document.querySelector(".page-section.is-active")?.id,
+    activeNavText: document.querySelector(".site-nav a[aria-current='page']")?.textContent?.trim(),
+  }));
+
+  expect(state.activePage).toBe("images");
+  expect(state.activeNavText).toBe("图片");
+});
+
 test("defaults to light theme when no preference is stored", async ({ page }) => {
   await page.emulateMedia({ colorScheme: "dark" });
-  await page.goto("/", { waitUntil: "networkidle" });
+  await page.goto("/", { waitUntil: "domcontentloaded" });
 
   const theme = await page.evaluate(() => document.documentElement.dataset.theme);
 
@@ -25,7 +39,7 @@ test("defaults to light theme when no preference is stored", async ({ page }) =>
 
 test("keeps desktop navigation visible on narrow desktop windows", async ({ page }) => {
   await page.setViewportSize({ width: 840, height: 900 });
-  await page.goto("/", { waitUntil: "networkidle" });
+  await page.goto("/", { waitUntil: "domcontentloaded" });
 
   const navigation = await page.evaluate(() => ({
     navDisplay: getComputedStyle(document.querySelector(".site-nav")).display,
@@ -34,4 +48,44 @@ test("keeps desktop navigation visible on narrow desktop windows", async ({ page
 
   expect(navigation.navDisplay).toBe("flex");
   expect(navigation.mobileToggleDisplay).toBe("none");
+});
+
+test("uses a single gallery column when the desktop content area is narrow", async ({ page }) => {
+  await page.setViewportSize({ width: 760, height: 900 });
+  await page.goto("/?page=images", { waitUntil: "domcontentloaded" });
+  await page.waitForSelector(".gallery-card");
+
+  const gallery = await page.evaluate(() => {
+    const list = document.querySelector(".mobile-image-list");
+    const headerTitle = document.querySelector(".gallery-index-header h1");
+    const columns = getComputedStyle(list).gridTemplateColumns
+      .split(" ")
+      .filter(Boolean);
+
+    return {
+      columnCount: columns.length,
+      headerFontSize: Number.parseFloat(getComputedStyle(headerTitle).fontSize),
+      scrollWidth: document.documentElement.scrollWidth,
+      innerWidth: window.innerWidth,
+    };
+  });
+
+  expect(gallery.columnCount).toBe(1);
+  expect(gallery.headerFontSize).toBeLessThanOrEqual(56);
+  expect(gallery.scrollWidth).toBeLessThanOrEqual(gallery.innerWidth);
+});
+
+test("prioritizes visible gallery images and lazy-loads the rest", async ({ page }) => {
+  await page.goto("/?page=images", { waitUntil: "domcontentloaded" });
+  await page.waitForSelector(".gallery-card img");
+
+  const loading = await page.evaluate(() =>
+    [...document.querySelectorAll(".gallery-card img")]
+      .slice(0, 5)
+      .map((img) => img.getAttribute("loading")),
+  );
+
+  expect(loading.slice(0, 3)).toEqual(["eager", "eager", "eager"]);
+  expect(loading[3]).toBe("lazy");
+  expect(loading[4]).toBe("lazy");
 });

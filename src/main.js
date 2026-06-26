@@ -4,7 +4,7 @@ const pageSections = Array.from(document.querySelectorAll("[data-page]"));
 const navLinks = Array.from(document.querySelectorAll(".site-nav a[href*='page=']"));
 const themePull = document.querySelector(".theme-pull");
 const cordPath = document.querySelector(".theme-pull__cord-path");
-const defaultPage = "articles";
+const defaultPage = "images";
 const routePages = new Set(pageSections.map((section) => section.id));
 let cordKickStartedAt = 0;
 let cordPullTimeout;
@@ -178,7 +178,8 @@ function updatePageVisibility() {
   });
 
   navLinks.forEach((link) => {
-    const isActive = link.hash === `#${activePageId}`;
+    const linkPage = new URL(link.href, window.location.href).searchParams.get("page");
+    const isActive = linkPage === activePageId;
     if (isActive) {
       link.setAttribute("aria-current", "page");
     } else {
@@ -330,10 +331,22 @@ function populateMobileImages() {
     button.type = "button";
     button.setAttribute("aria-label", `查看${item.title}`);
     button.addEventListener("click", () => openGalleryViewer(index));
+    mobileImage.className = "gallery-card__image";
     mobileImage.src = item.src;
     mobileImage.alt = item.title;
-    mobileImage.loading = "eager";
+    mobileImage.loading = index < 3 ? "eager" : "lazy";
+    if (index < 3) {
+      mobileImage.fetchPriority = "high";
+    }
     mobileImage.decoding = "async";
+    mobileImage.addEventListener("load", () => {
+      mobileImage.classList.add("is-loaded");
+      button.classList.add("is-image-loaded");
+    }, { once: true });
+    if (mobileImage.complete && mobileImage.naturalWidth) {
+      mobileImage.classList.add("is-loaded");
+      button.classList.add("is-image-loaded");
+    }
     caption.className = "gallery-card__meta";
     title.className = "gallery-card__title";
     title.textContent = item.title;
