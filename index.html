@@ -9,8 +9,17 @@
     <script>
       (() => {
         const storedTheme = localStorage.getItem("site-theme");
-        const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-        document.documentElement.dataset.theme = storedTheme || systemTheme;
+        const routePages = new Set(["articles", "images", "videos", "about", "contact"]);
+        const hashPage = window.location.hash.replace("#", "");
+
+        document.documentElement.dataset.theme = storedTheme || "light";
+
+        if (routePages.has(hashPage)) {
+          const nextUrl = new URL(window.location.href);
+          nextUrl.searchParams.set("page", hashPage);
+          nextUrl.hash = "";
+          window.history.replaceState({}, "", `${nextUrl.pathname}?${nextUrl.searchParams.toString()}`);
+        }
       })();
     </script>
   </head>
@@ -18,7 +27,7 @@
     <a class="skip-link" href="#main-content">跳到主要内容</a>
     <div class="site-shell">
       <aside class="sidebar" aria-label="网站导航">
-        <a class="identity" href="#articles" aria-label="Alano 幸运降临首页">
+        <a class="identity" href="?page=articles" aria-label="Alano 幸运降临首页">
           <span class="identity__name">Alano</span>
           <span class="identity__chinese">幸运降临</span>
         </a>
@@ -35,14 +44,14 @@
 
         <nav class="site-nav">
           <div class="project-links">
-            <a href="#images">图片</a>
-            <a href="#videos">视频</a>
-            <a href="#articles" aria-current="page">分享</a>
+            <a href="?page=images">图片</a>
+            <a href="?page=videos">视频</a>
+            <a href="?page=articles" aria-current="page">分享</a>
           </div>
 
           <div class="utility-links">
-            <a href="#about">关于</a>
-            <a href="#contact">联系</a>
+            <a href="?page=about">关于</a>
+            <a href="?page=contact">联系</a>
           </div>
         </nav>
       </aside>

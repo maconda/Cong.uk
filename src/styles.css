@@ -1257,7 +1257,7 @@ button:focus-visible {
   }
 }
 
-@media (max-width: 860px) {
+@media (max-width: 720px) {
   :root {
     --header-height: 76px;
     --container-pad: 20px;
@@ -1405,7 +1405,7 @@ button:focus-visible {
 }
 
 /* Return desktop composition to the original vertical personal-site rhythm. */
-@media (min-width: 861px) {
+@media (min-width: 721px) {
   :root {
     --content-area-width: min(1060px, calc(100vw - 360px));
     --media-width: min(1040px, var(--content-area-width));
@@ -1752,7 +1752,7 @@ body {
   max-height: 50px;
 }
 
-@media (max-width: 860px) {
+@media (max-width: 720px) {
 .contact-links {
     grid-template-columns: repeat(2, minmax(84px, 1fr));
     grid-auto-rows: 68px;
@@ -1773,7 +1773,7 @@ body {
 }
 }
 
-@media (min-width: 861px) {
+@media (min-width: 721px) {
   .sidebar::after {
     content: "";
     position: absolute;
@@ -1851,7 +1851,7 @@ body {
   }
 }
 
-@media (min-width: 861px) and (max-width: 1180px) {
+@media (min-width: 721px) and (max-width: 1180px) {
   :root {
     --container-pad: 36px;
     --content-area-width: calc(100vw - 300px);
@@ -1905,7 +1905,7 @@ body {
   }
 }
 
-@media (max-width: 860px) {
+@media (max-width: 720px) {
   :root {
     --container-pad: 20px;
     --site-max-width: 100%;
@@ -2141,7 +2141,7 @@ body {
   }
 }
 
-@media (max-width: 860px) {
+@media (max-width: 720px) {
   .sidebar {
     padding-right: 112px;
   }
@@ -2328,7 +2328,7 @@ body {
   }
 }
 
-@media (max-width: 860px) {
+@media (max-width: 720px) {
   .gallery-index-header {
     display: block;
     margin-bottom: 34px;

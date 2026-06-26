@@ -1,10 +1,11 @@
 import "./styles.css";
 
 const pageSections = Array.from(document.querySelectorAll("[data-page]"));
-const navLinks = Array.from(document.querySelectorAll(".site-nav a[href^='#']"));
+const navLinks = Array.from(document.querySelectorAll(".site-nav a[href*='page=']"));
 const themePull = document.querySelector(".theme-pull");
 const cordPath = document.querySelector(".theme-pull__cord-path");
 const defaultPage = "articles";
+const routePages = new Set(pageSections.map((section) => section.id));
 let cordKickStartedAt = 0;
 let cordPullTimeout;
 let cordPointerX = 0;
@@ -51,6 +52,15 @@ updateThemeControl();
 
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
+}
+
+function syncRoute(pageId, replace = false) {
+  if (!routePages.has(pageId)) return;
+
+  const nextUrl = new URL(window.location.href);
+  nextUrl.searchParams.set("page", pageId);
+  nextUrl.hash = "";
+  window.history[replace ? "replaceState" : "pushState"]({}, "", `${nextUrl.pathname}?${nextUrl.searchParams.toString()}`);
 }
 
 window.addEventListener("pointermove", (event) => {
@@ -142,12 +152,24 @@ const videos = [
 ];
 
 function getRequestedPage() {
-  const pageId = window.location.hash.replace("#", "");
-  return pageSections.some((section) => section.id === pageId) ? pageId : defaultPage;
+  const url = new URL(window.location.href);
+  const queryPage = url.searchParams.get("page");
+
+  if (routePages.has(queryPage)) {
+    return queryPage;
+  }
+
+  const hashPage = window.location.hash.replace("#", "");
+  if (routePages.has(hashPage)) {
+    return hashPage;
+  }
+
+  return defaultPage;
 }
 
 function updatePageVisibility() {
   const activePageId = getRequestedPage();
+  syncRoute(activePageId, true);
 
   pageSections.forEach((section) => {
     const isActive = section.id === activePageId;
@@ -461,5 +483,16 @@ document.querySelectorAll(".mobile-menu-toggle").forEach((toggle) => {
   });
 });
 
-window.addEventListener("hashchange", updatePageVisibility);
+navLinks.forEach((link) => {
+  link.addEventListener("click", (event) => {
+    event.preventDefault();
+    const pageId = new URL(link.href, window.location.href).searchParams.get("page");
+    if (!routePages.has(pageId)) return;
+
+    syncRoute(pageId);
+    updatePageVisibility();
+  });
+});
+
+window.addEventListener("popstate", updatePageVisibility);
 updatePageVisibility();
