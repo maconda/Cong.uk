@@ -2,10 +2,13 @@ import "./styles.css";
 
 const pageSections = Array.from(document.querySelectorAll("[data-page]"));
 const navLinks = Array.from(document.querySelectorAll(".site-nav a[href*='page=']"));
+const aboutTimelineNodes = Array.from(document.querySelectorAll(".timeline-node"));
 const themePull = document.querySelector(".theme-pull");
 const cordPath = document.querySelector(".theme-pull__cord-path");
 const defaultPage = "images";
 const routePages = new Set(pageSections.map((section) => section.id));
+let aboutTimelineObserver;
+let aboutTimelineListenersBound = false;
 let cordKickStartedAt = 0;
 let cordPullTimeout;
 let cordPointerX = 0;
@@ -61,6 +64,46 @@ function syncRoute(pageId, replace = false) {
   nextUrl.searchParams.set("page", pageId);
   nextUrl.hash = "";
   window.history[replace ? "replaceState" : "pushState"]({}, "", `${nextUrl.pathname}?${nextUrl.searchParams.toString()}`);
+}
+
+function revealVisibleAboutTimelineNodes() {
+  if (!aboutTimelineNodes.length) return;
+
+  aboutTimelineNodes.forEach((node) => {
+    const rect = node.getBoundingClientRect();
+    if (rect.top < window.innerHeight * 0.92 && rect.bottom > 0) {
+      node.classList.add("visible");
+    }
+  });
+}
+
+function initAboutTimeline() {
+  if (!aboutTimelineNodes.length) return;
+
+  if (!aboutTimelineListenersBound) {
+    window.addEventListener("scroll", revealVisibleAboutTimelineNodes, { passive: true });
+    window.addEventListener("resize", revealVisibleAboutTimelineNodes);
+    aboutTimelineListenersBound = true;
+  }
+
+  if (!("IntersectionObserver" in window)) {
+    revealVisibleAboutTimelineNodes();
+    return;
+  }
+
+  if (!aboutTimelineObserver) {
+    aboutTimelineObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("visible");
+        }
+      });
+    }, { threshold: 0.12 });
+
+    aboutTimelineNodes.forEach((node) => aboutTimelineObserver.observe(node));
+  }
+
+  window.requestAnimationFrame(revealVisibleAboutTimelineNodes);
 }
 
 window.addEventListener("pointermove", (event) => {
@@ -189,6 +232,10 @@ function updatePageVisibility() {
 
   if (activePageId === "images") {
     updateFrameSize();
+  }
+
+  if (activePageId === "about") {
+    initAboutTimeline();
   }
 }
 
