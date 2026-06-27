@@ -89,3 +89,16 @@ test("prioritizes visible gallery images and lazy-loads the rest", async ({ page
   expect(loading[3]).toBe("lazy");
   expect(loading[4]).toBe("lazy");
 });
+
+test("uses remote R2 icons in the contact section", async ({ page }) => {
+  await page.goto("/?page=contact", { waitUntil: "domcontentloaded" });
+
+  const iconSources = await page.evaluate(() =>
+    [...document.querySelectorAll(".contact-link img")].map((img) => img.src),
+  );
+
+  expect(iconSources).toHaveLength(6);
+  for (const src of iconSources) {
+    expect(src).toMatch(/^https:\/\/pub-03b5a2e995e948508262312977ad5792\.r2\.dev\/icons\/.+\.png$/);
+  }
+});
