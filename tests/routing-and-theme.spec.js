@@ -92,15 +92,66 @@ test("prioritizes visible gallery images and lazy-loads the rest", async ({ page
 
 test("uses remote R2 icons in the contact section", async ({ page }) => {
   await page.goto("/?page=contact", { waitUntil: "domcontentloaded" });
-
-  const iconSources = await page.evaluate(() =>
-    [...document.querySelectorAll(".contact-link img")].map((img) => img.src),
+  await page.waitForFunction(() =>
+    [...document.querySelectorAll(".contact-link img")].every((img) => img.naturalWidth > 0),
   );
 
-  expect(iconSources).toHaveLength(6);
-  for (const src of iconSources) {
-    expect(src).toMatch(/^https:\/\/pub-03b5a2e995e948508262312977ad5792\.r2\.dev\/icons\/.+\.png$/);
+  const icons = await page.evaluate(() =>
+    [...document.querySelectorAll(".contact-link img")].map((img) => ({
+      src: img.src,
+      naturalWidth: img.naturalWidth,
+    })),
+  );
+
+  expect(icons).toHaveLength(6);
+  for (const icon of icons) {
+    expect(icon.src).toMatch(/^https:\/\/pub-03b5a2e995e948508262312977ad5792\.r2\.dev\/icons\/.+\.png$/);
+    expect(icon.naturalWidth).toBeGreaterThan(0);
   }
+});
+
+test("renders contact links as a dense mobile app grid", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/?page=contact", { waitUntil: "domcontentloaded" });
+
+  const contactGrid = await page.evaluate(() => {
+    const grid = document.querySelector(".contact-links");
+    const firstLink = document.querySelector(".contact-link");
+    const firstIcon = document.querySelector(".contact-link img");
+    const columns = getComputedStyle(grid)
+      .gridTemplateColumns
+      .split(" ")
+      .filter(Boolean);
+
+    return {
+      columnCount: columns.length,
+      labelCount: document.querySelectorAll(".contact-link__label").length,
+      gridWidth: grid.getBoundingClientRect().width,
+      viewportWidth: window.innerWidth,
+      linkHeight: firstLink.getBoundingClientRect().height,
+      iconWidth: firstIcon.getBoundingClientRect().width,
+      scrollWidth: document.documentElement.scrollWidth,
+    };
+  });
+
+  expect(contactGrid.columnCount).toBe(3);
+  expect(contactGrid.labelCount).toBe(6);
+  expect(contactGrid.gridWidth).toBeGreaterThanOrEqual(contactGrid.viewportWidth - 60);
+  expect(contactGrid.linkHeight).toBeGreaterThanOrEqual(104);
+  expect(contactGrid.iconWidth).toBeGreaterThanOrEqual(58);
+  expect(contactGrid.scrollWidth).toBeLessThanOrEqual(contactGrid.viewportWidth);
+});
+
+test("keeps the contact page inside the desktop viewport", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto("/?page=contact", { waitUntil: "domcontentloaded" });
+
+  const pageWidth = await page.evaluate(() => ({
+    scrollWidth: document.documentElement.scrollWidth,
+    viewportWidth: window.innerWidth,
+  }));
+
+  expect(pageWidth.scrollWidth).toBeLessThanOrEqual(pageWidth.viewportWidth);
 });
 
 test("renders the detailed about profile and career timeline", async ({ page }) => {
