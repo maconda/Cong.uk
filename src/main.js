@@ -7,6 +7,14 @@ const themePull = document.querySelector(".theme-pull");
 const cordPath = document.querySelector(".theme-pull__cord-path");
 const defaultPage = "images";
 const routePages = new Set(pageSections.map((section) => section.id));
+const articleList = document.querySelector("[data-article-list]");
+const articleDetail = document.querySelector("[data-article-detail]");
+const articleSource = document.querySelector("[data-article-source]");
+const articleTitle = document.querySelector("[data-article-title]");
+const articleLead = document.querySelector("[data-article-lead]");
+const articleBody = document.querySelector("[data-article-body]");
+const articleOpenButtons = document.querySelectorAll("[data-article-open]");
+const articleBackButton = document.querySelector("[data-article-back]");
 let aboutTimelineObserver;
 let aboutTimelineListenersBound = false;
 let cordKickStartedAt = 0;
@@ -65,6 +73,37 @@ function syncRoute(pageId, replace = false) {
   nextUrl.hash = "";
   window.history[replace ? "replaceState" : "pushState"]({}, "", `${nextUrl.pathname}?${nextUrl.searchParams.toString()}`);
 }
+
+const articles = {
+  father: {
+    source: "李健 / 转载整理",
+    title: "在你离去的多年以后，我为你骄傲",
+    lead: "这是一篇关于父亲、家庭、成长与迟到的理解的文字。它写到家信、离乡、清华时期的迷惘，也写到一个儿子在许多年后才真正理解父亲的隐忍与忠诚。",
+    paragraphs: [
+      "由于我之前从来没有离开过家，刚上大学时，很不适应一个人独立生活，总是不停地想家，而盼望家信，则成为我校园生活里一个不可或缺的内容。每天放学，就在传达室信件堆积如山的桌子上，寻找自己的名字。其实每封信的内容大致相同，而我总是不厌其烦地读了一遍又一遍。",
+      "家信中，除了嘱咐我努力学习和注意身体外，就是告诉我别怕花钱。事实上，我从来不是一个在钱财上懂得计算的人，有时还愿意请客吃饭什么的，可每次自觉花钱多了的时候，也会深深自责。那时候每个人的家庭情况大都差不多，不会太富裕，尤其是我们家里有三个孩子，抚养的过程像是在爬上坡路一样，多少还是有些费力。",
+      "三年级的时候，我开始厌学，心中竟隐约闪现了退学的念头，整天都郁郁寡欢。记得有一天，我在宿舍里整理书信时，翻看了大一时家里的来信，那来自父母的满篇的喜悦与自豪还有信誓旦旦让当时的我羞愧难当，一时竟泪流满面。心想，我不能为难善良的父母，不能打消他们在社会生活中刚刚建立的自信，更不能让我的家庭布满愁云。我暗暗下了决心，我一定要坚持到毕业，拿到学位。",
+      "小的时候，我一直跟随父亲上班，他们排戏的时候我就在京剧团的院子里四处闲逛，陪伴我的是花花草草和蝴蝶蜻蜓，以及大把的时间。父亲是我见过的最老实善良的人，用当今的话说，就是完全无公害。几年后的一个寒冬，我常常在夜半醒来，发现父亲在写东西，有时还捂着胸口。我想，父亲在乎的不仅仅是几级工资的钱，还有一个演员对于职称的认可和艺术的尊重。",
+      "初中毕业的时候我考上了市里面最好的高中。有一次父亲要随单位去俄罗斯演出，当天母亲让我去火车站送父亲。后来才知道，父亲是想在同事面前小小地炫耀一下他的儿子。那时我真正意识到他为我感到骄傲。而我也同时发现他有些老了，和从前的那个神采飞扬的武生父亲略有差别了。我的心隐隐地收紧了一下。",
+      "我曾经写过一首歌叫《父亲》，里面写道：你为我骄傲，我却未曾因你感到自豪，你如此宽厚，是我永远的惭愧。去年我重新录制了这首歌，在最后加了一句：我终于明白在你离去的多年以后，我为你骄傲，当谈起你的时候……我知道了，我为他感到骄傲的，是他对生活的隐忍和对家庭的忠诚。",
+      "现在，每当我取得什么成绩时，母亲在高兴之余常常会说，要是你爸还活着该有多好。前些天，她在看我的电视节目，当我唱完一首歌，她一个人对着电视机激动得鼓起了掌，还连声喊道：好好好。她把这些当作有趣的事情告诉了我，听后我也乐了，可随后心里却涌出一丝悲凉。是啊，要是父亲还活着该有多好，那鼓掌的就不是她一个人了，他们俩一定会热烈地讨论，我甚至可以想象他们谈话的内容。",
+    ],
+  },
+  stand: {
+    source: "《三联生活周刊》 / 李健",
+    title: "立与不立皆辛苦",
+    lead: "这篇文章写的是时间、梦想、三十而立与四十不惑这些被频繁引用却又常常被误解的话题。它不鼓吹成功，也不鼓吹失败，而是在讨论一个人如何与自己的处境达成和解。",
+    paragraphs: [
+      "多年以前，40岁对我来讲是个遥不可及的年龄，如今，我已不敢再怠慢时间了，因为它就像个刺客，不知何时会突然来到你的面前。是的，我已经被推进了40岁的门槛，而且，已经进来几年了。我在此并非要强调时间的速度，而是想说时间对于一个人的成长常常展现出苛刻甚至是吝啬的一面。",
+      "我越来越感到做成一件事情所需的时间往往太多了，很多人在与时间的讨价还价中丧失了信心。一直以来，人们喜欢给人生标识刻度，以此来衡量每个人生的进程和质量。有人说，既然在当下的社会三十难立，那么就宽泛到四十吧。一个毫无背景的年轻人靠自己的努力想在30多岁找到属于自己的立足之地，有所成绩，谈何容易。",
+      "我大学毕业后工作了三年，所从事的工作和专业没太大关系，跟后来的音乐工作更无关联。等到所谓的事业有所起色时我已经36岁了。回想在我30岁的时候，似乎刚刚找到音乐的方向，勉强能靠音乐为生，所谓成就无从谈起，面对谜一样的未来偶尔也会担心。",
+      "通常，人们愿意用10年作为一个阶段，这看似不短的时间里，其实真正能用到做事的有效时间是很短的，不仅要花时间去找到一个方向，还要面临许多生活琐事。一个刚刚毕业的年轻人，在寻找自己未来的方向时，更多的是要解决自己的生活问题，这还不包括那些不可预知的精神烦恼。",
+      "常听说，人要有梦想，那我们说说关于梦想的“梦话”。梦想可以有，但大部分梦想是实现不了的。即使实现不了那也没关系，我们依然可以活得很好，或者说，有些梦想实现不了更好，这意味着没有付出有可能是很沉重的代价。生活中，大多数人是平凡的，平凡没有什么不好，平凡自有它的幸运和乐趣。",
+      "在别人眼中，我可能算是一个四十而立的代表，可这个“立”需要立多久以及能立多久呢？我不知道，没人知道。人的一生很不确定，很难在某一个阶段用某一个标准去评判。如果一定要去评判一个人的话，有时像评价爱情一样，只有到生命结束时才知道到底如何。",
+      "最后，我想说的是，四十而立就不错了，三十能立更好，不“立”也没关系，因为这些“立”与“不立”都是别人眼里的，而你的世界理论上真的与他人无关。生命，就是时间之旅的体验，你可能没有世俗意义上的成功，但这并不妨碍你去寻找和积累生活的乐趣。",
+    ],
+  },
+};
 
 function revealVisibleAboutTimelineNodes() {
   if (!aboutTimelineNodes.length) return;
@@ -171,28 +210,7 @@ if (cordPath && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) 
   window.requestAnimationFrame(animateCord);
 }
 
-const videos = [
-  {
-    platform: "Bilibili",
-    title: "暴躁“老哥”",
-    description: "嵌入播放来自哔哩哔哩，本站仅作为视频预览与索引。",
-    duration: "00:27",
-    watchUrl: "https://www.bilibili.com/video/BV1dQ4y1a7J4/",
-    embedUrl: "https://player.bilibili.com/player.html?bvid=BV1dQ4y1a7J4&cid=462590117&page=1&autoplay=0",
-    allow: "fullscreen; picture-in-picture",
-    thumbnail: "https://i2.hdslb.com/bfs/archive/7dac1b5fd61e56b9aa416e201d7f1445560924a4.jpg",
-  },
-  {
-    platform: "YouTube",
-    title: "YouTube 视频",
-    description: "嵌入播放来自 YouTube，本站仅作为视频预览与索引。",
-    duration: "",
-    watchUrl: "https://youtu.be/qWasfMjE7SA",
-    embedUrl: "https://www.youtube.com/embed/qWasfMjE7SA?rel=0",
-    allow: "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share",
-    thumbnail: "https://img.youtube.com/vi/qWasfMjE7SA/hqdefault.jpg",
-  },
-];
+const VIDEO_API_URL = "https://bili-api.httpsaristinotionsitefoodie-57a2611a302c46ae86fc7f2d92a3a.workers.dev/";
 
 function getRequestedPage() {
   const url = new URL(window.location.href);
@@ -208,6 +226,42 @@ function getRequestedPage() {
   }
 
   return defaultPage;
+}
+
+function getRequestedArticle() {
+  const url = new URL(window.location.href);
+  const articleId = url.searchParams.get("article");
+  return articleId && articles[articleId] ? articleId : "";
+}
+
+function setArticleRoute(articleId, replace = false) {
+  const nextUrl = new URL(window.location.href);
+  if (articleId) {
+    nextUrl.searchParams.set("article", articleId);
+  } else {
+    nextUrl.searchParams.delete("article");
+  }
+  window.history[replace ? "replaceState" : "pushState"]({}, "", `${nextUrl.pathname}?${nextUrl.searchParams.toString()}`);
+}
+
+function renderArticleDetail(articleId) {
+  const article = articles[articleId];
+  if (!articleDetail || !articleList || !article || !articleSource || !articleTitle || !articleLead || !articleBody) {
+    return;
+  }
+
+  articleList.hidden = true;
+  articleDetail.hidden = false;
+  articleSource.textContent = article.source;
+  articleTitle.textContent = article.title;
+  articleLead.textContent = article.lead;
+  articleBody.innerHTML = article.paragraphs.map((paragraph) => `<p>${paragraph}</p>`).join("");
+}
+
+function showArticleList() {
+  if (!articleDetail || !articleList) return;
+  articleList.hidden = false;
+  articleDetail.hidden = true;
 }
 
 function updatePageVisibility() {
@@ -237,59 +291,131 @@ function updatePageVisibility() {
   if (activePageId === "about") {
     initAboutTimeline();
   }
-}
 
-const videoFrame = document.querySelector(".video-player-frame iframe");
-const videoPlatform = document.querySelector(".video-platform");
-const videoTitle = document.querySelector(".video-title");
-const videoDescription = document.querySelector(".video-description");
-const videoOpenLink = document.querySelector(".video-open-link");
-const videoCards = Array.from(document.querySelectorAll(".video-card"));
-
-function showVideo(index) {
-  const video = videos[index];
-  if (!video) return;
-
-  if (videoFrame) {
-    videoFrame.src = video.embedUrl;
-    videoFrame.title = video.title;
-    videoFrame.allow = video.allow;
-  }
-
-  if (videoPlatform) {
-    videoPlatform.textContent = video.platform;
-  }
-
-  if (videoTitle) {
-    videoTitle.textContent = video.title;
-  }
-
-  if (videoDescription) {
-    videoDescription.textContent = video.description;
-  }
-
-  if (videoOpenLink) {
-    videoOpenLink.href = video.watchUrl;
-    videoOpenLink.textContent = `在 ${video.platform} 打开`;
-  }
-
-  videoCards.forEach((card, cardIndex) => {
-    const isActive = cardIndex === index;
-    card.classList.toggle("is-active", isActive);
-    if (isActive) {
-      card.setAttribute("aria-current", "true");
+  if (activePageId === "articles") {
+    const articleId = getRequestedArticle();
+    if (articleId) {
+      renderArticleDetail(articleId);
     } else {
-      card.removeAttribute("aria-current");
+      showArticleList();
     }
+  }
+}
+
+const videoGrid = document.querySelector("[data-video-grid]");
+const videoLoadingState = document.querySelector("[data-video-loading-state]");
+const videoErrorState = document.querySelector("[data-video-error-state]");
+const videoModal = document.querySelector("[data-video-modal]");
+const videoModalFrame = document.querySelector("[data-video-modal-frame]");
+const videoModalCloseButtons = document.querySelectorAll("[data-video-modal-close]");
+let dynamicVideos = [];
+let activeVideoBvid = "";
+
+function normalizeVideoRecord(video) {
+  const thumbnail = video.pic?.startsWith("http") ? video.pic.replace(/^http:/, "https:") : `https:${video.pic}`;
+  return {
+    platform: "Bilibili",
+    title: video.title,
+    duration: video.duration || "",
+    bvid: video.bvid,
+    watchUrl: `https://www.bilibili.com/video/${video.bvid}/`,
+    embedUrl: `https://player.bilibili.com/player.html?bvid=${video.bvid}&page=1&autoplay=1&high_quality=1&as_wide=1`,
+    thumbnail,
+  };
+}
+
+function closeVideoModal() {
+  if (!videoModal || !videoModalFrame) return;
+  videoModal.hidden = true;
+  videoModalFrame.innerHTML = "";
+}
+
+function openVideoModal(bvid) {
+  const video = dynamicVideos.find((item) => item.bvid === bvid);
+  if (!videoModal || !videoModalFrame || !video) return;
+
+  videoModalFrame.innerHTML = `<iframe src="${video.embedUrl}" title="${video.title}" allow="fullscreen; picture-in-picture" allowfullscreen loading="lazy"></iframe>`;
+  videoModal.hidden = false;
+}
+
+function renderVideoGrid(videos) {
+  if (!videoGrid) return;
+
+  videoGrid.innerHTML = "";
+
+  videos.forEach((video, index) => {
+    const card = document.createElement("button");
+    card.type = "button";
+    card.className = "video-card";
+    card.setAttribute("aria-label", `播放${video.title}`);
+    card.addEventListener("click", () => openVideoModal(video.bvid));
+    if (index === 0) {
+      activeVideoBvid = video.bvid;
+    }
+
+    card.innerHTML = `
+      <span class="video-card__media video-media">
+        ${index === 0 ? '<span class="video-card__badge">最新</span>' : ""}
+        <img src="${video.thumbnail}" alt="${video.title}视频封面" loading="lazy" referrerpolicy="no-referrer">
+        <span class="video-media__fallback" aria-hidden="true"></span>
+      </span>
+      <span class="video-card__body">
+        <span class="video-meta">
+          <span class="video-pill">${video.platform}</span>
+        </span>
+        <strong>${video.title}</strong>
+      </span>
+    `;
+
+    videoGrid.appendChild(card);
   });
 }
 
-videoCards.forEach((card) => {
-  card.addEventListener("click", () => {
-    const index = Number(card.dataset.videoIndex);
-    showVideo(index);
-  });
+async function loadDynamicVideos() {
+  if (!videoGrid) return;
+
+  try {
+    const response = await fetch(VIDEO_API_URL);
+    if (!response.ok) {
+      throw new Error("video api failed");
+    }
+
+    const payload = await response.json();
+    dynamicVideos = Array.isArray(payload) ? payload.map(normalizeVideoRecord) : [];
+
+    if (!dynamicVideos.length) {
+      throw new Error("empty video payload");
+    }
+
+    renderVideoGrid(dynamicVideos);
+
+    if (videoLoadingState) {
+      videoLoadingState.hidden = true;
+    }
+
+    if (videoErrorState) {
+      videoErrorState.hidden = true;
+    }
+  } catch (error) {
+    if (videoLoadingState) {
+      videoLoadingState.hidden = true;
+    }
+
+    if (videoErrorState) {
+      videoErrorState.hidden = false;
+    }
+  }
+}
+
+videoModalCloseButtons.forEach((button) => button.addEventListener("click", closeVideoModal));
+
+window.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && videoModal && !videoModal.hidden) {
+    closeVideoModal();
+  }
 });
+
+loadDynamicVideos();
 
 const images = [
   {
@@ -552,6 +678,20 @@ navLinks.forEach((link) => {
     syncRoute(pageId);
     updatePageVisibility();
   });
+});
+
+articleOpenButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    const articleId = button.dataset.articleOpen;
+    if (!articleId || !articles[articleId]) return;
+    setArticleRoute(articleId);
+    renderArticleDetail(articleId);
+  });
+});
+
+articleBackButton?.addEventListener("click", () => {
+  setArticleRoute("");
+  showArticleList();
 });
 
 window.addEventListener("popstate", updatePageVisibility);

@@ -27,9 +27,9 @@
     <a class="skip-link" href="#main-content">跳到主要内容</a>
     <div class="site-shell">
       <aside class="sidebar" aria-label="网站导航">
-        <a class="identity" href="?page=articles" aria-label="Alano 幸运降临首页">
+        <a class="identity" href="?page=images" aria-label="Alano 幸运降临首页">
           <span class="identity__name">Alano</span>
-          <span class="identity__chinese">幸运降临</span>
+          <span class="identity__slogan">做具体的事，过具体的生活，幸运降临。</span>
         </a>
 
         <button class="theme-pull" type="button" aria-label="切换暗夜模式" aria-pressed="false">
@@ -146,100 +146,21 @@
         <section class="page-section" id="videos" data-page aria-labelledby="videos-title" hidden>
           <header class="page-header video-header">
             <h1 id="videos-title">视频</h1>
-            <p class="video-intro">这里收集我感兴趣的视频、影像灵感和外部平台内容。</p>
+            <p class="video-intro">这里收集我感兴趣的视频、影像灵感和外部平台内容。点击卡片可在本站弹窗预览，也可以直接前往外部平台观看。</p>
           </header>
 
           <div class="video-page" aria-label="视频栏目">
-            <section class="video-section" aria-labelledby="featured-video-title">
-              <p class="video-section-label">精选视频</p>
-              <article class="featured-video">
-                <button
-                  class="featured-video__media video-media"
-                  type="button"
-                  data-video-embed-toggle
-                  data-embed-src="https://player.bilibili.com/player.html?bvid=BV1dQ4y1a7J4&amp;cid=462590117&amp;page=1&amp;autoplay=0"
-                  data-embed-title="暴躁“老哥”"
-                  aria-label="播放暴躁“老哥”"
-                >
-                  <img
-                    src="https://i2.hdslb.com/bfs/archive/7dac1b5fd61e56b9aa416e201d7f1445560924a4.jpg"
-                    alt="暴躁“老哥”视频封面"
-                    loading="lazy"
-                    data-video-thumb
-                  >
-                  <span class="video-media__fallback" aria-hidden="true"></span>
-                  <span class="video-media__play" aria-hidden="true">播放预览</span>
-                </button>
+            <div class="video-loading-state" data-video-loading-state>正在同步最新视频…</div>
+            <div class="video-error-state" data-video-error-state hidden>视频接口暂时不可用，请稍后再试。</div>
+            <div class="video-grid" aria-label="视频列表" data-video-grid></div>
+          </div>
 
-                <div class="featured-video__body">
-                  <div class="video-meta">
-                    <span class="video-pill">Bilibili</span>
-                    <span>00:27</span>
-                  </div>
-                  <h2 id="featured-video-title">暴躁“老哥”</h2>
-                  <p>嵌入播放来自哔哩哔哩。点击封面可在本站轻量预览，也可以直接前往外部平台观看。</p>
-                  <a class="video-open-link" href="https://www.bilibili.com/video/BV1dQ4y1a7J4/" target="_blank" rel="noopener noreferrer">在 Bilibili 打开</a>
-                </div>
-              </article>
-
-              <div class="video-embed-panel" data-video-embed-panel hidden>
-                <iframe
-                  title=""
-                  src=""
-                  allow="fullscreen; picture-in-picture"
-                  allowfullscreen
-                  loading="lazy"
-                ></iframe>
-              </div>
-            </section>
-
-            <section class="video-section" aria-labelledby="more-videos-title">
-              <div class="video-section-heading">
-                <p class="video-section-label">更多视频</p>
-                <h2 id="more-videos-title">外部平台内容</h2>
-              </div>
-
-              <div class="video-grid" aria-label="更多视频列表">
-                <a class="video-card" href="https://www.bilibili.com/video/BV1dQ4y1a7J4/" target="_blank" rel="noopener noreferrer">
-                  <span class="video-card__media video-media">
-                    <img
-                      src="https://i2.hdslb.com/bfs/archive/7dac1b5fd61e56b9aa416e201d7f1445560924a4.jpg"
-                      alt="暴躁“老哥”视频封面"
-                      loading="lazy"
-                      data-video-thumb
-                    >
-                    <span class="video-media__fallback" aria-hidden="true"></span>
-                  </span>
-                  <span class="video-card__body">
-                    <span class="video-meta">
-                      <span class="video-pill">Bilibili</span>
-                      <span>00:27</span>
-                    </span>
-                    <strong>暴躁“老哥”</strong>
-                    <span class="video-card__description">来自哔哩哔哩的短视频预览，适合快速打开外部平台观看。</span>
-                  </span>
-                </a>
-
-                <a class="video-card" href="https://youtu.be/qWasfMjE7SA" target="_blank" rel="noopener noreferrer">
-                  <span class="video-card__media video-media">
-                    <img
-                      src="https://img.youtube.com/vi/qWasfMjE7SA/hqdefault.jpg"
-                      alt="YouTube 视频封面"
-                      loading="lazy"
-                      data-video-thumb
-                    >
-                    <span class="video-media__fallback" aria-hidden="true"></span>
-                  </span>
-                  <span class="video-card__body">
-                    <span class="video-meta">
-                      <span class="video-pill">YouTube</span>
-                    </span>
-                    <strong>YouTube 视频</strong>
-                    <span class="video-card__description">外部平台视频索引，点击卡片会在新标签页中打开 YouTube。</span>
-                  </span>
-                </a>
-              </div>
-            </section>
+          <div class="video-modal" data-video-modal hidden>
+            <div class="video-modal__backdrop" data-video-modal-close></div>
+            <div class="video-modal__dialog" role="dialog" aria-modal="true" aria-label="视频播放器">
+              <button class="video-modal__close" type="button" data-video-modal-close>关闭</button>
+              <div class="video-modal__frame" data-video-modal-frame></div>
+            </div>
           </div>
         </section>
 
@@ -248,7 +169,48 @@
             <h1 id="articles-title">分享</h1>
           </header>
 
-          <div class="empty-state">暂无分享，之后会放一些杂志、新闻与链接摘录。</div>
+          <section class="articles-stack" data-article-list aria-label="文章列表">
+            <article class="article-card" data-article-card="father">
+              <button class="article-card__link" type="button" data-article-open="father">
+                <span class="article-card__cover">
+                  <img src="https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=1200&q=80" alt="书信与旧纸张" loading="lazy">
+                </span>
+                <div class="article-card__meta">
+                  <span class="article-feature__tag">文字</span>
+                  <span class="article-card__source">李健 / 转载整理</span>
+                  <span class="article-card__date">2018-02-04</span>
+                </div>
+                <h2 class="article-card__title">在你离去的多年以后，我为你骄傲</h2>
+                <p class="article-card__excerpt">这是一篇关于父亲、家庭、成长与迟到的理解的文字。它写到家信、离乡、清华时期的迷惘，也写到一个儿子在许多年后才真正理解父亲的隐忍与忠诚。</p>
+              </button>
+            </article>
+
+            <article class="article-card" data-article-card="stand">
+              <button class="article-card__link" type="button" data-article-open="stand">
+                <span class="article-card__cover">
+                  <img src="https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=1200&q=80" alt="桌面上的纸张与笔记" loading="lazy">
+                </span>
+                <div class="article-card__meta">
+                  <span class="article-feature__tag">文字</span>
+                  <span class="article-card__source">《三联生活周刊》 / 李健</span>
+                  <span class="article-card__date">2018-02-14</span>
+                </div>
+                <h2 class="article-card__title">立与不立皆辛苦</h2>
+                <p class="article-card__excerpt">这篇文章写的是时间、梦想、三十而立与四十不惑这些被频繁引用却又常常被误解的话题。它不鼓吹成功，也不鼓吹失败，而是在讨论一个人如何与自己的处境达成和解。</p>
+              </button>
+            </article>
+          </section>
+
+          <article class="article-detail" data-article-detail hidden>
+            <button class="article-detail__back" type="button" data-article-back>返回列表</button>
+            <div class="article-feature__meta">
+              <span class="article-feature__tag">文字</span>
+              <span class="article-feature__source" data-article-source></span>
+            </div>
+            <h2 class="article-feature__title" data-article-title></h2>
+            <p class="article-feature__lead" data-article-lead></p>
+            <div class="article-feature__body" data-article-body></div>
+          </article>
         </section>
 
         <section class="page-section text-page" id="about" data-page aria-labelledby="about-title" hidden>

@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>视频模块预览</title>
+    <style>
+      :root {
+        --bg-color: #0d0e12;
+        --card-bg: rgba(255, 255, 255, 0.03);
+        --card-border: rgba(255, 255, 255, 0.07);
+        --text-main: #f3f4f6;
+        --text-muted: #9ca3af;
+        --accent-glow: rgba(0, 174, 236, 0.25);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        padding: 40px 20px 72px;
+        background:
+          radial-gradient(circle at top, rgba(0, 174, 236, 0.16), transparent 32%),
+          linear-gradient(180deg, #101117 0%, #0d0e12 100%);
+        color: var(--text-main);
+        font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      }
+
+      .preview-shell {
+        width: min(1200px, 100%);
+        margin: 0 auto;
+      }
+
+      .preview-header {
+        margin-bottom: 28px;
+      }
+
+      .preview-eyebrow {
+        margin: 0 0 10px;
+        color: var(--text-muted);
+        font-size: 0.82rem;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+
+      .preview-title {
+        margin: 0 0 12px;
+        font-size: clamp(2rem, 5vw, 3.4rem);
+        line-height: 1.02;
+        letter-spacing: -0.04em;
+      }
+
+      .preview-text {
+        margin: 0;
+        max-width: 720px;
+        color: var(--text-muted);
+        font-size: 1rem;
+        line-height: 1.7;
+      }
+
+      .screenbox-root {
+        padding: 20px 0;
+      }
+
+      .screenbox-video-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 24px;
+        width: 100%;
+      }
+
+      .sb-video-card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 12px;
+        overflow: hidden;
+        cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+      }
+
+      .sb-video-card:hover {
+        transform: translateY(-6px);
+        border-color: rgba(0, 174, 236, 0.4);
+        box-shadow: 0 12px 30px rgba(0, 174, 236, 0.2);
+      }
+
+      .sb-thumb-box {
+        position: relative;
+        width: 100%;
+        padding-top: 56.25%;
+        background: #15171f;
+        overflow: hidden;
+      }
+
+      .sb-thumb-box img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      .sb-video-card:hover img {
+        transform: scale(1.05);
+      }
+
+      .sb-card-body {
+        padding: 14px;
+      }
+
+      .sb-card-title {
+        margin: 0 0 8px;
+        font-size: 0.95rem;
+        line-height: 1.45;
+      }
+
+      .sb-card-meta {
+        margin: 0;
+        color: var(--text-muted);
+        font-size: 0.75rem;
+        letter-spacing: 0.04em;
+      }
+
+      .sk-loading,
+      .sk-error {
+        grid-column: 1 / -1;
+        padding: 40px 20px;
+        border: 1px solid var(--card-border);
+        border-radius: 12px;
+        background: var(--card-bg);
+        color: var(--text-muted);
+        text-align: center;
+      }
+
+      .sk-error {
+        color: #fca5a5;
+      }
+
+      .screenbox-modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(7, 8, 10, 0.85);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.4s ease;
+        z-index: 9999;
+      }
+
+      .screenbox-modal.active {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .sb-player-container {
+        width: 90%;
+        max-width: 960px;
+        aspect-ratio: 16 / 9;
+        background: #000;
+        border-radius: 16px;
+        overflow: hidden;
+        position: relative;
+        display: grid;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 24px 50px rgba(0, 0, 0, 0.5);
+      }
+
+      #sbIframeWrapper {
+        width: 100%;
+        height: 100%;
+        min-height: 0;
+      }
+
+      .sb-player-container iframe {
+        display: block;
+        width: 100%;
+        height: 100%;
+        border: none;
+      }
+
+      .sb-close-btn {
+        position: absolute;
+        top: -45px;
+        right: 0;
+        background: none;
+        border: none;
+        color: #fff;
+        cursor: pointer;
+        font-size: 0.95rem;
+        opacity: 0.8;
+      }
+
+      .sb-close-btn:hover {
+        opacity: 1;
+      }
+
+      @media (max-width: 720px) {
+        body {
+          padding-top: 28px;
+        }
+
+        .preview-title {
+          font-size: 2.2rem;
+        }
+
+        .sb-player-container {
+          width: calc(100% - 24px);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="preview-shell">
+      <header class="preview-header">
+        <p class="preview-eyebrow">Preview / Screenbox Video Module</p>
+        <h1 class="preview-title">新视频模块效果预览</h1>
+        <p class="preview-text">这是一个独立预览页，不会覆盖你当前站点的视频栏目。卡片数据直接从你给出的 Cloudflare Worker 拉取，点击卡片后在当前页弹窗播放。</p>
+      </header>
+
+      <div class="screenbox-root">
+        <div class="screenbox-video-grid" id="screenboxGrid">
+          <div class="sk-loading">正在初始化媒体中继流...</div>
+        </div>
+      </div>
+    </main>
+
+    <div class="screenbox-modal" id="sbPlayerModal">
+      <div class="sb-player-container">
+        <button class="sb-close-btn" type="button" id="sbCloseBtn">✕ 关闭</button>
+        <div id="sbIframeWrapper"></div>
+      </div>
+    </div>
+
+    <script>
+      const API_URL = "https://bili-api.httpsaristinotionsitefoodie-57a2611a302c46ae86fc7f2d92a3a.workers.dev/";
+      const grid = document.getElementById("screenboxGrid");
+      const modal = document.getElementById("sbPlayerModal");
+      const iframeWrapper = document.getElementById("sbIframeWrapper");
+      const closeBtn = document.getElementById("sbCloseBtn");
+
+      function closeSbPlayer() {
+        modal.classList.remove("active");
+        iframeWrapper.innerHTML = "";
+      }
+
+      function openSbPlayer(bvid) {
+        iframeWrapper.innerHTML =
+          `<iframe src="https://player.bilibili.com/player.html?bvid=${bvid}&page=1&autoplay=1&high_quality=1&as_wide=1" allowfullscreen></iframe>`;
+        modal.classList.add("active");
+      }
+
+      async function loadVideos() {
+        try {
+          const res = await fetch(API_URL);
+          if (!res.ok) {
+            throw new Error("bad response");
+          }
+
+          const videos = await res.json();
+          if (!Array.isArray(videos) || videos.length === 0) {
+            grid.innerHTML = '<div class="sk-error">接口已连接，但当前没有可显示的视频。</div>';
+            return;
+          }
+
+          grid.innerHTML = "";
+
+          videos.forEach((v) => {
+            const card = document.createElement("button");
+            card.type = "button";
+            card.className = "sb-video-card";
+            card.setAttribute("aria-label", `播放 ${v.title}`);
+            card.addEventListener("click", () => openSbPlayer(v.bvid));
+
+            const imageUrl = v.pic && v.pic.startsWith("http") ? v.pic : `https:${v.pic}`;
+
+            card.innerHTML = `
+              <div class="sb-thumb-box">
+                <img src="${imageUrl}" alt="${v.title}" loading="lazy">
+              </div>
+              <div class="sb-card-body">
+                <h3 class="sb-card-title">${v.title}</h3>
+                <p class="sb-card-meta">${v.bvid}</p>
+              </div>
+            `;
+
+            grid.appendChild(card);
+          });
+        } catch (e) {
+          grid.innerHTML = '<div class="sk-error">加载失败，请检查 Cloudflare Worker 状态。</div>';
+        }
+      }
+
+      modal.addEventListener("click", closeSbPlayer);
+      closeBtn.addEventListener("click", closeSbPlayer);
+      document.querySelector(".sb-player-container").addEventListener("click", (event) => {
+        event.stopPropagation();
+      });
+
+      loadVideos();
+    </script>
+  </body>
+</html>

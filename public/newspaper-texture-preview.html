@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>报纸纹理正式风格预览</title>
+    <style>
+      :root {
+        --sidebar-width: 220px;
+        --page-bg: #efe1c8;
+        --page-bg-soft: #f6ecd9;
+        --page-bg-deep: #e1cfaf;
+        --text-primary: #221912;
+        --text-secondary: #695343;
+        --line: rgba(57, 39, 23, 0.18);
+        --surface: rgba(249, 239, 220, 0.74);
+        --ink-red: #7f2f24;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        min-height: 100%;
+        margin: 0;
+      }
+
+      body {
+        color: var(--text-primary);
+        font-family: "Adobe Garamond W01", "Yu Mincho", "Hiragino Mincho Pro", serif;
+        background:
+          radial-gradient(circle at top, rgba(255, 248, 230, 0.68), transparent 34%),
+          linear-gradient(180deg, var(--page-bg-soft) 0%, var(--page-bg) 22rem, var(--page-bg-deep) 100%);
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0.4;
+        background-image:
+          radial-gradient(circle at 8% 14%, rgba(118, 89, 52, 0.18) 0 1px, transparent 2px),
+          radial-gradient(circle at 76% 26%, rgba(94, 67, 36, 0.12) 0 1px, transparent 1.9px),
+          radial-gradient(circle at 28% 78%, rgba(112, 84, 50, 0.1) 0 1.1px, transparent 2px),
+          radial-gradient(circle at 92% 84%, rgba(92, 68, 40, 0.08) 0 1.3px, transparent 2.3px),
+          repeating-linear-gradient(90deg, rgba(96, 78, 50, 0.04) 0 1px, transparent 1px 7px),
+          repeating-linear-gradient(0deg, rgba(96, 78, 50, 0.026) 0 1px, transparent 1px 9px),
+          linear-gradient(180deg, rgba(124, 96, 54, 0.06), rgba(255, 255, 255, 0));
+        mix-blend-mode: multiply;
+      }
+
+      body::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0.13;
+        background:
+          radial-gradient(circle at 0 0, rgba(103, 67, 33, 0.42), transparent 18%),
+          radial-gradient(circle at 100% 0, rgba(103, 67, 33, 0.28), transparent 16%),
+          radial-gradient(circle at 0 100%, rgba(103, 67, 33, 0.26), transparent 18%),
+          radial-gradient(circle at 100% 100%, rgba(103, 67, 33, 0.32), transparent 20%);
+        mix-blend-mode: multiply;
+      }
+
+      .site-shell {
+        display: block;
+        min-height: 100vh;
+        padding: 60px;
+      }
+
+      .sidebar {
+        position: fixed;
+        top: 60px;
+        left: 60px;
+        width: var(--sidebar-width);
+      }
+
+      .identity {
+        display: inline-flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 68px;
+      }
+
+      .identity__name {
+        font-size: 23px;
+      }
+
+      .identity__chinese {
+        font-size: 18px;
+      }
+
+      .site-nav {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        font-size: 14px;
+        line-height: 1.7;
+      }
+
+      .site-nav a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .site-nav a.active,
+      .site-nav a:hover {
+        color: var(--text-secondary);
+      }
+
+      .content {
+        margin-left: var(--sidebar-width);
+        padding-left: 24px;
+      }
+
+      .page-header {
+        width: min(100%, 720px);
+        margin-bottom: 36px;
+        position: relative;
+      }
+
+      .page-header::before {
+        content: "";
+        position: absolute;
+        inset: -18px -24px -24px;
+        background:
+          radial-gradient(circle at 18% 24%, rgba(108, 87, 54, 0.08) 0 1px, transparent 1.8px),
+          linear-gradient(180deg, rgba(114, 95, 63, 0.05), transparent 76%);
+        opacity: 0.9;
+        z-index: -1;
+      }
+
+      .page-header h1 {
+        margin: 0 0 10px;
+        font-size: 24px;
+        font-weight: 400;
+      }
+
+      .page-header p {
+        margin: 0;
+        max-width: 620px;
+        color: var(--text-secondary);
+        font-family: "Helvetica Neue", Arial, "PingFang SC", sans-serif;
+        font-size: 12.5px;
+        line-height: 1.8;
+        letter-spacing: 0.03em;
+      }
+
+      .page-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(260px, 320px);
+        gap: 34px;
+        width: min(100%, 980px);
+      }
+
+      .article-surface {
+        position: relative;
+        min-height: 520px;
+        padding: 28px 30px 32px;
+        border: 1px solid var(--line);
+        background:
+          linear-gradient(180deg, rgba(250, 239, 217, 0.88), rgba(243, 230, 205, 0.82)),
+          var(--surface);
+        overflow: hidden;
+        box-shadow: inset 0 0 0 1px rgba(93, 68, 38, 0.06);
+      }
+
+      .article-surface::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        opacity: 0.38;
+        background-image:
+          radial-gradient(circle at 14% 16%, rgba(96, 78, 48, 0.16) 0 1px, transparent 1.9px),
+          radial-gradient(circle at 76% 30%, rgba(96, 78, 48, 0.11) 0 1px, transparent 1.8px),
+          repeating-linear-gradient(90deg, rgba(96, 78, 48, 0.03) 0 1px, transparent 1px 7px),
+          repeating-linear-gradient(0deg, rgba(96, 78, 48, 0.022) 0 1px, transparent 1px 9px);
+        mix-blend-mode: multiply;
+      }
+
+      .article-surface > * {
+        position: relative;
+        z-index: 1;
+      }
+
+      .section-label {
+        margin: 0 0 18px;
+        color: var(--text-secondary);
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .article-title {
+        margin: 0 0 16px;
+        font-size: 42px;
+        line-height: 1.02;
+        font-weight: 400;
+        letter-spacing: 0.01em;
+      }
+
+      .article-copy {
+        margin: 0 0 18px;
+        max-width: 34rem;
+        font-family: "Helvetica Neue", Arial, "PingFang SC", sans-serif;
+        font-size: 12.5px;
+        line-height: 1.9;
+        letter-spacing: 0.03em;
+        color: rgba(29, 26, 23, 0.82);
+      }
+
+      .article-rule {
+        width: 100%;
+        height: 1px;
+        margin: 26px 0;
+        background: linear-gradient(90deg, rgba(29, 26, 23, 0.24), transparent 80%);
+      }
+
+      .article-columns {
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 24px;
+      }
+
+      .article-note {
+        font-family: "Helvetica Neue", Arial, "PingFang SC", sans-serif;
+        font-size: 12px;
+        line-height: 1.85;
+        color: var(--text-secondary);
+      }
+
+      .side-panel {
+        position: relative;
+        min-height: 520px;
+        padding: 28px 24px;
+        border: 1px solid var(--line);
+        background: rgba(247, 236, 214, 0.58);
+        overflow: hidden;
+      }
+
+      .side-panel::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        opacity: 0.14;
+        background-image:
+          radial-gradient(circle at 22% 24%, rgba(108, 87, 54, 0.1) 0 1px, transparent 1.8px),
+          repeating-linear-gradient(0deg, rgba(108, 87, 54, 0.018) 0 1px, transparent 1px 10px);
+      }
+
+      .side-panel > * {
+        position: relative;
+        z-index: 1;
+      }
+
+      .swatch {
+        display: grid;
+        gap: 12px;
+      }
+
+      .swatch-box {
+        aspect-ratio: 4 / 3;
+        border: 1px solid var(--line);
+        background:
+          radial-gradient(circle at 16% 18%, rgba(104, 84, 54, 0.16) 0 1px, transparent 1.8px),
+          repeating-linear-gradient(90deg, rgba(104, 84, 54, 0.026) 0 1px, transparent 1px 7px),
+          linear-gradient(180deg, #f5e8cb, #ead9b5);
+      }
+
+      .stamp {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 86px;
+        height: 86px;
+        margin-bottom: 16px;
+        border: 2px solid rgba(74, 49, 24, 0.42);
+        border-radius: 50%;
+        color: rgba(74, 49, 24, 0.9);
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        transform: rotate(-8deg);
+      }
+
+      .site-copyright {
+        position: fixed;
+        left: 60px;
+        bottom: 20px;
+        color: rgba(29, 26, 23, 0.32);
+        font-size: 11px;
+        white-space: nowrap;
+      }
+
+      @media (max-width: 980px) {
+        .site-shell {
+          padding: 28px 20px 60px;
+        }
+
+        .sidebar {
+          position: static;
+          width: auto;
+          margin-bottom: 28px;
+        }
+
+        .content {
+          margin-left: 0;
+          padding-left: 0;
+        }
+
+        .page-grid,
+        .article-columns {
+          grid-template-columns: 1fr;
+        }
+
+        .site-copyright {
+          position: static;
+          margin-top: 24px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="site-shell">
+      <aside class="sidebar" aria-label="网站导航">
+        <div class="identity">
+          <span class="identity__name">Alano</span>
+          <span class="identity__chinese">幸运降临</span>
+        </div>
+
+        <nav class="site-nav">
+          <a href="#">图片</a>
+          <a href="#">视频</a>
+          <a href="#" class="active">分享</a>
+          <a href="#">关于</a>
+          <a href="#">联系</a>
+        </nav>
+      </aside>
+
+      <main class="content">
+        <header class="page-header">
+          <h1>分享</h1>
+          <p>这是“降阶适配预览页”。它参考你给的复古杂志风格，但只提取旧纸、颗粒、油墨感和轻边缘旧化，不照搬整套海报式复古排版。</p>
+        </header>
+
+        <section class="page-grid">
+          <article class="article-surface">
+            <p class="section-label">Editorial Texture Preview</p>
+            <h2 class="article-title">旧纸感更明显了，但仍然是你的网站。</h2>
+            <p class="article-copy">这个版本把你给的参考图做了降阶处理。页面基底从纯净白调成了偏米色旧纸，背景里的颗粒、纤维和轻微油墨不均匀更可感知，但还没有走到“专题海报”那种强装饰状态。</p>
+            <p class="article-copy">正式接入时，我会把这种质感主要放在“分享”和“关于”页，图片与视频页只保留更轻的一层，让媒体内容依然干净可读。</p>
+            <div class="article-rule"></div>
+            <div class="article-columns">
+              <div class="article-note">
+                你给的参考图真正有价值的地方，不是泛黄本身，而是纸张温度、印刷颗粒、轻旧化边缘和内容被“编辑过”的感觉。这些东西可以被提炼进现有站点。
+              </div>
+              <div class="article-note">
+                所以我把变化控制在背景层和材质层，不碰导航逻辑、不碰内容结构、不碰你现在的留白秩序。这样保留原有页面性格，同时让站点底子更有杂志气息。
+              </div>
+            </div>
+          </article>
+
+          <aside class="side-panel">
+            <p class="section-label">Texture Sample</p>
+            <div class="stamp">paper<br>issue</div>
+            <div class="swatch">
+              <div class="swatch-box"></div>
+              <div class="article-note">这块样本更接近你给的参考图：暖米色纸底、可见颗粒、纸纤维和轻边缘旧化。但它仍然是“收敛版”，不会把整个站点直接推成复古封面。</div>
+            </div>
+          </aside>
+        </section>
+      </main>
+
+      <div class="site-copyright">正式风格预览 / 2026</div>
+    </div>
+  </body>
+</html>
