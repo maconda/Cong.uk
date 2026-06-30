@@ -600,16 +600,31 @@ test("uses the R2 portrait image on the CV about profile", async ({ page }) => {
   const portrait = await page.evaluate(() => {
     const image = document.querySelector(".cv-portrait img");
     const marker = document.querySelector(".cv-portrait__mark");
+    const frame = document.querySelector(".cv-portrait");
+    const imageRect = image?.getBoundingClientRect();
+    const frameRect = frame?.getBoundingClientRect();
     return {
       src: image?.getAttribute("src"),
       alt: image?.getAttribute("alt"),
       markerExists: Boolean(marker),
+      imageWidth: imageRect?.width,
+      imageHeight: imageRect?.height,
+      frameWidth: frameRect?.width,
+      frameHeight: frameRect?.height,
+      imageLeft: imageRect?.left,
+      imageTop: imageRect?.top,
+      frameLeft: frameRect?.left,
+      frameTop: frameRect?.top,
     };
   });
 
   expect(portrait.src).toBe("https://pub-87e925c7796a4e538d6501e03f59add6.r2.dev/photo/portrait.jpg");
   expect(portrait.alt).toBe("马聪");
   expect(portrait.markerExists).toBe(false);
+  expect(portrait.imageWidth).toBeLessThanOrEqual(portrait.frameWidth * 1.05);
+  expect(portrait.imageHeight).toBeLessThanOrEqual(portrait.frameHeight * 1.05);
+  expect(Math.abs(portrait.imageLeft - portrait.frameLeft)).toBeLessThanOrEqual(4);
+  expect(Math.abs(portrait.imageTop - portrait.frameTop)).toBeLessThanOrEqual(4);
 });
 
 test("keeps the CV about page consistent and readable in both themes", async ({ page }) => {
