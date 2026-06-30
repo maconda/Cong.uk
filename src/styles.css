@@ -4128,9 +4128,9 @@ body.viewer-open .site-copyright {
   width: 100%;
   height: 100%;
   display: block;
-  object-fit: contain;
+  object-fit: cover;
   object-position: center;
-  filter: grayscale(20%) contrast(1.05);
+  filter: saturate(0.72) contrast(0.96) sepia(0.18) grayscale(0.12);
 }
 
 .cv-name-block {

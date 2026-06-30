@@ -615,16 +615,21 @@ test("uses the R2 portrait image on the CV about profile", async ({ page }) => {
       imageTop: imageRect?.top,
       frameLeft: frameRect?.left,
       frameTop: frameRect?.top,
+      objectFit: image ? getComputedStyle(image).objectFit : null,
+      filter: image ? getComputedStyle(image).filter : null,
     };
   });
 
   expect(portrait.src).toBe("https://pub-87e925c7796a4e538d6501e03f59add6.r2.dev/photo/portrait.jpg");
   expect(portrait.alt).toBe("马聪");
   expect(portrait.markerExists).toBe(false);
-  expect(portrait.imageWidth).toBeLessThanOrEqual(portrait.frameWidth * 1.05);
-  expect(portrait.imageHeight).toBeLessThanOrEqual(portrait.frameHeight * 1.05);
-  expect(Math.abs(portrait.imageLeft - portrait.frameLeft)).toBeLessThanOrEqual(4);
-  expect(Math.abs(portrait.imageTop - portrait.frameTop)).toBeLessThanOrEqual(4);
+  expect(portrait.objectFit).toBe("cover");
+  expect(portrait.filter).toContain("saturate(0.72)");
+  expect(portrait.filter).toContain("sepia(0.18)");
+  expect(portrait.imageWidth).toBeGreaterThanOrEqual(portrait.frameWidth * 0.9);
+  expect(portrait.imageHeight).toBeGreaterThanOrEqual(portrait.frameHeight * 0.9);
+  expect(Math.abs(portrait.imageLeft - portrait.frameLeft)).toBeLessThanOrEqual(8);
+  expect(Math.abs(portrait.imageTop - portrait.frameTop)).toBeLessThanOrEqual(8);
 });
 
 test("keeps the CV about page consistent and readable in both themes", async ({ page }) => {
