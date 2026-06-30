@@ -50,6 +50,130 @@ test("navigation from an article detail opens the target list view", async ({ pa
   await expect(page.locator("#videos")).toBeVisible();
 });
 
+test("renders article list as compact left-text right-image rows", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto("/?page=articles", { waitUntil: "domcontentloaded" });
+
+  const layout = await page.evaluate(() => {
+    const list = document.querySelector("[data-article-list]");
+    const cards = [...document.querySelectorAll(".article-card")];
+    const firstCard = cards[0];
+    const secondCard = cards[1];
+    const firstLink = firstCard.querySelector(".article-card__link");
+    const cover = firstCard.querySelector(".article-card__cover");
+    const meta = firstCard.querySelector(".article-card__meta");
+    const title = firstCard.querySelector(".article-card__title");
+    const excerpt = firstCard.querySelector(".article-card__excerpt");
+    const linkStyle = getComputedStyle(firstLink);
+    const cardStyle = getComputedStyle(firstCard);
+    const listRect = list.getBoundingClientRect();
+    const firstRect = firstCard.getBoundingClientRect();
+    const secondRect = secondCard.getBoundingClientRect();
+    const coverRect = cover.getBoundingClientRect();
+    const titleRect = title.getBoundingClientRect();
+    const metaRect = meta.getBoundingClientRect();
+    const excerptRect = excerpt.getBoundingClientRect();
+
+    return {
+      listWidth: listRect.width,
+      cardWidth: firstRect.width,
+      display: linkStyle.display,
+      columnCount: linkStyle.gridTemplateColumns.split(" ").filter(Boolean).length,
+      borderTopWidth: cardStyle.borderTopWidth,
+      coverLeft: coverRect.left,
+      titleLeft: titleRect.left,
+      coverWidth: coverRect.width,
+      coverHeight: coverRect.height,
+      titleTop: titleRect.top,
+      metaTop: metaRect.top,
+      excerptTop: excerptRect.top,
+      rowGap: secondRect.top - firstRect.bottom,
+      scrollWidth: document.documentElement.scrollWidth,
+      innerWidth: window.innerWidth,
+    };
+  });
+
+  expect(layout.display).toBe("grid");
+  expect(layout.columnCount).toBe(2);
+  expect(layout.listWidth).toBeGreaterThanOrEqual(860);
+  expect(layout.cardWidth).toBe(layout.listWidth);
+  expect(layout.coverLeft).toBeGreaterThan(layout.titleLeft);
+  expect(layout.coverWidth).toBeGreaterThanOrEqual(220);
+  expect(layout.coverWidth).toBeLessThanOrEqual(280);
+  expect(layout.coverHeight).toBeGreaterThanOrEqual(150);
+  expect(layout.coverHeight).toBeLessThanOrEqual(210);
+  expect(layout.metaTop).toBeLessThan(layout.titleTop);
+  expect(layout.titleTop).toBeLessThan(layout.excerptTop);
+  expect(layout.borderTopWidth).toBe("1px");
+  expect(layout.rowGap).toBeGreaterThanOrEqual(0);
+  expect(layout.scrollWidth).toBeLessThanOrEqual(layout.innerWidth);
+});
+
+test("uses real Li Jian images for article cards", async ({ page }) => {
+  await page.goto("/?page=articles", { waitUntil: "domcontentloaded" });
+
+  await page.waitForFunction(() => [...document.querySelectorAll(".article-card__cover img")]
+    .every((img) => img.complete && img.naturalWidth > 100 && img.naturalHeight > 100));
+  const images = await page.evaluate(() => [...document.querySelectorAll(".article-card__cover img")].map((img) => ({
+    src: img.getAttribute("src") ?? "",
+    naturalWidth: img.naturalWidth,
+    naturalHeight: img.naturalHeight,
+    complete: img.complete,
+  })));
+
+  expect(images).toHaveLength(2);
+  for (const image of images) {
+    expect(image.src).toContain("/images/li-jian-");
+    expect(image.src).not.toContain("unsplash.com");
+    expect(image.src).not.toContain("commons.wikimedia.org/wiki/Special:FilePath");
+    expect(image.complete).toBe(true);
+    expect(image.naturalWidth).toBeGreaterThan(100);
+    expect(image.naturalHeight).toBeGreaterThan(100);
+  }
+});
+
+test("opens video modal with blurred backdrop and clear close control", async ({ page }) => {
+  await page.goto("/?page=videos", { waitUntil: "domcontentloaded" });
+  await page.waitForSelector(".video-card");
+  await page.locator(".video-card").first().click();
+  await expect(page.locator("[data-video-modal]")).toBeVisible();
+
+  const modal = await page.evaluate(() => {
+    const backdrop = document.querySelector(".video-modal__backdrop");
+    const frame = document.querySelector(".video-modal__frame");
+    const iframe = document.querySelector(".video-modal__frame iframe");
+    const backdropStyle = getComputedStyle(backdrop);
+    const frameStyle = getComputedStyle(frame);
+    const close = document.querySelector(".video-modal__close");
+    const closeStyle = getComputedStyle(close);
+    const closeRect = close.getBoundingClientRect();
+
+    return {
+      backdropBackground: backdropStyle.backgroundColor,
+      backdropFilter: backdropStyle.backdropFilter || backdropStyle.webkitBackdropFilter,
+      frameBackground: frameStyle.backgroundColor,
+      frameBoxShadow: frameStyle.boxShadow,
+      frameBorderRadius: frameStyle.borderRadius,
+      closeWidth: closeRect.width,
+      closeHeight: closeRect.height,
+      closeBackground: closeStyle.backgroundColor,
+      closeBorderWidth: closeStyle.borderTopWidth,
+      iframeSrc: iframe?.getAttribute("src") ?? "",
+    };
+  });
+
+  expect(modal.iframeSrc).toContain("player.bilibili.com");
+  expect(modal.backdropBackground).not.toBe("rgba(0, 0, 0, 0)");
+  expect(modal.backdropFilter).toContain("blur");
+  expect(modal.frameBackground).toBe("rgba(0, 0, 0, 0)");
+  expect(modal.frameBoxShadow).toBe("none");
+  expect(modal.frameBorderRadius).toBe("0px");
+  expect(modal.closeWidth).toBeGreaterThanOrEqual(40);
+  expect(modal.closeHeight).toBeGreaterThanOrEqual(40);
+  expect(modal.closeBackground).not.toBe("rgba(0, 0, 0, 0)");
+  expect(modal.closeBorderWidth).toBe("1px");
+});
+
 test("defaults to light theme when no preference is stored", async ({ page }) => {
   await page.emulateMedia({ colorScheme: "dark" });
   await page.goto("/", { waitUntil: "domcontentloaded" });
@@ -94,8 +218,8 @@ test("toggles between light and dark theme from the pull cord", async ({ page })
     backgroundColor: getComputedStyle(document.body).backgroundColor,
     backgroundImage: getComputedStyle(document.body).backgroundImage,
   }));
-  expect(restoredBackground.color).toBe("rgb(42, 38, 34)");
-  expect(restoredBackground.backgroundColor).toMatch(/rgb\(242, 239, 232\)|rgba\(242, 239, 232, 1\)/);
+  expect(restoredBackground.color).toBe("rgb(43, 45, 45)");
+  expect(restoredBackground.backgroundColor).toMatch(/rgb\(232, 232, 228\)|rgba\(232, 232, 228, 1\)/);
 });
 
 test("keeps desktop navigation visible on narrow desktop windows", async ({ page }) => {
@@ -156,7 +280,7 @@ test("keeps the identity mark calm and well balanced", async ({ page }) => {
 });
 
 test("uses a single gallery column when the desktop content area is narrow", async ({ page }) => {
-  await page.setViewportSize({ width: 760, height: 900 });
+  await page.setViewportSize({ width: 540, height: 900 });
   await page.goto("/?page=images", { waitUntil: "domcontentloaded" });
   await page.waitForSelector(".gallery-card");
 
@@ -178,6 +302,138 @@ test("uses a single gallery column when the desktop content area is narrow", asy
   expect(gallery.columnCount).toBe(1);
   expect(gallery.headerFontSize).toBeLessThanOrEqual(56);
   expect(gallery.scrollWidth).toBeLessThanOrEqual(gallery.innerWidth);
+});
+
+test("keeps the photo index grid aligned and uses balanced desktop width", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto("/?page=images", { waitUntil: "domcontentloaded" });
+  await page.waitForSelector(".gallery-card");
+
+  const layout = await page.evaluate(() => {
+    const header = document.querySelector(".gallery-index-header");
+    const grid = document.querySelector(".mobile-image-list");
+    const section = document.querySelector("#images");
+    const firstCard = document.querySelector(".gallery-card");
+    const headerRect = header.getBoundingClientRect();
+    const gridRect = grid.getBoundingClientRect();
+    const sectionRect = section.getBoundingClientRect();
+    const firstCardRect = firstCard.getBoundingClientRect();
+    const columns = getComputedStyle(grid).gridTemplateColumns.split(" ").filter(Boolean);
+
+    return {
+      headerLeft: headerRect.left,
+      gridLeft: gridRect.left,
+      sectionLeft: sectionRect.left,
+      sectionWidth: sectionRect.width,
+      headerWidth: headerRect.width,
+      gridWidth: gridRect.width,
+      leftInset: gridRect.left - sectionRect.left,
+      rightInset: sectionRect.right - gridRect.right,
+      gapAfterHeader: firstCardRect.top - headerRect.bottom,
+      columnCount: columns.length,
+      scrollWidth: document.documentElement.scrollWidth,
+      innerWidth: window.innerWidth,
+    };
+  });
+
+  expect(layout.columnCount).toBe(4);
+  expect(Math.abs(layout.headerLeft - layout.gridLeft)).toBeLessThanOrEqual(1);
+  expect(layout.gridWidth).toBeGreaterThanOrEqual(Math.min(1060, layout.sectionWidth - 2));
+  expect(layout.gridWidth).toBeLessThanOrEqual(1160);
+  expect(Math.abs(layout.headerWidth - layout.gridWidth)).toBeLessThanOrEqual(1);
+  expect(Math.abs(layout.leftInset - layout.rightInset)).toBeLessThanOrEqual(1);
+  expect(layout.gapAfterHeader).toBeGreaterThanOrEqual(20);
+  expect(layout.gapAfterHeader).toBeLessThanOrEqual(30);
+  expect(layout.scrollWidth).toBeLessThanOrEqual(layout.innerWidth);
+});
+
+test("keeps site navigation text aligned after changing active page", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto("/?page=images", { waitUntil: "domcontentloaded" });
+
+  const before = await page.locator(".site-nav a", { hasText: "视频" }).evaluate((node) => {
+    const rect = node.getBoundingClientRect();
+    return {
+      left: rect.left,
+      width: rect.width,
+      beforeDisplay: getComputedStyle(node, "::before").display,
+      beforeContent: getComputedStyle(node, "::before").content,
+      beforeOpacity: getComputedStyle(node, "::before").opacity,
+      beforePosition: getComputedStyle(node, "::before").position,
+    };
+  });
+
+  await page.locator(".site-nav a", { hasText: "视频" }).click();
+
+  const after = await page.locator(".site-nav a", { hasText: "视频" }).evaluate((node) => {
+    const rect = node.getBoundingClientRect();
+    return {
+      left: rect.left,
+      width: rect.width,
+      beforeDisplay: getComputedStyle(node, "::before").display,
+      beforeContent: getComputedStyle(node, "::before").content,
+      beforeOpacity: getComputedStyle(node, "::before").opacity,
+      beforePosition: getComputedStyle(node, "::before").position,
+      beforeBackground: getComputedStyle(node, "::before").backgroundColor,
+      ariaCurrent: node.getAttribute("aria-current"),
+    };
+  });
+
+  expect(after.ariaCurrent).toBe("page");
+  expect(Math.abs(after.left - before.left)).toBeLessThanOrEqual(1);
+  expect(Math.abs(after.width - before.width)).toBeLessThanOrEqual(1);
+  expect(after.beforeDisplay).toBe("block");
+  expect(after.beforeContent).toBe("\"\"");
+  expect(Number(after.beforeOpacity)).toBeGreaterThan(0.4);
+  expect(after.beforePosition).toBe("absolute");
+  expect(after.beforeBackground).toBe("rgb(168, 58, 50)");
+});
+
+test("centers each page module within the available content area", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+
+  for (const pageName of ["images", "videos", "articles", "about", "contact"]) {
+    await page.goto(`/?page=${pageName}`, { waitUntil: "domcontentloaded" });
+    if (pageName === "images") {
+      await page.waitForSelector(".gallery-card");
+    }
+    if (pageName === "videos") {
+      await page.waitForSelector(".video-card");
+    }
+
+    const layout = await page.evaluate((activePage) => {
+      const section = document.querySelector(`#${activePage}`);
+      const selectors = {
+        images: ".mobile-image-list",
+        videos: ".video-page",
+        articles: ".articles-stack",
+        about: ".about-portfolio, .cv-page",
+        contact: ".contact-links",
+      };
+      const surface = section.querySelector(selectors[activePage]);
+      if (!surface) {
+        return { activePage, missingSurface: true };
+      }
+      const sectionRect = section.getBoundingClientRect();
+      const surfaceRect = surface.getBoundingClientRect();
+
+      return {
+        activePage,
+        missingSurface: false,
+        leftInset: surfaceRect.left - sectionRect.left,
+        rightInset: sectionRect.right - surfaceRect.right,
+        surfaceWidth: surfaceRect.width,
+        sectionWidth: sectionRect.width,
+        scrollWidth: document.documentElement.scrollWidth,
+        innerWidth: window.innerWidth,
+      };
+    }, pageName);
+
+    expect(layout.missingSurface).toBe(false);
+    expect(layout.surfaceWidth).toBeLessThanOrEqual(layout.sectionWidth);
+    expect(Math.abs(layout.leftInset - layout.rightInset)).toBeLessThanOrEqual(2);
+    expect(layout.scrollWidth).toBeLessThanOrEqual(layout.innerWidth);
+  }
 });
 
 test("prioritizes visible gallery images and lazy-loads the rest", async ({ page }) => {
@@ -227,7 +483,10 @@ test("opens a clean light gallery viewer with left photo and right metadata", as
 
   await page.locator(".gallery-card__button").first().click();
   await expect(page.locator(".gallery-viewer")).toHaveClass(/is-open/);
-  await expect(page.locator(".gallery-viewer__figure img")).toBeVisible();
+  await page.waitForFunction(() => {
+    const image = document.querySelector(".gallery-viewer__figure img");
+    return image && image.complete && image.naturalWidth > 0 && image.naturalHeight > 0;
+  });
 
   const viewer = await page.evaluate(() => {
     const rail = document.querySelector(".gallery-viewer__rail");
@@ -285,8 +544,8 @@ test("opens a clean light gallery viewer with left photo and right metadata", as
   expect(viewer.figureLeft).toBeLessThan(viewer.metadataLeft);
   expect(viewer.metadataHeight).toBeGreaterThan(500);
   expect(viewer.figureRight - viewer.figureLeft).toBeGreaterThan(viewer.metadataRight - viewer.metadataLeft);
-  expect(viewer.viewerBackgroundColor).toBe("rgb(242, 239, 232)");
-  expect(viewer.metadataTextColor).toBe("rgb(42, 38, 34)");
+  expect(viewer.viewerBackgroundColor).toBe("rgb(232, 232, 228)");
+  expect(viewer.metadataTextColor).toBe("rgb(43, 45, 45)");
   expect(viewer.metadataBackgroundColor).toBe("rgba(0, 0, 0, 0)");
   expect(viewer.metadataBackground).toBe("none");
   expect(viewer.metadataCenterDelta).toBeLessThan(32);
@@ -525,8 +784,11 @@ test("uses the same soft paper texture on videos and articles", async ({ page })
     await page.goto(`/?page=${pageName}`, { waitUntil: "domcontentloaded" });
 
     const texture = await page.evaluate(() => ({
+      pageBackgroundColor: getComputedStyle(document.documentElement).backgroundColor,
       bodyBackgroundImage: getComputedStyle(document.body).backgroundImage,
+      beforeOpacity: getComputedStyle(document.body, "::before").opacity,
       beforeBackgroundImage: getComputedStyle(document.body, "::before").backgroundImage,
+      afterBackgroundImage: getComputedStyle(document.body, "::after").backgroundImage,
       headerBeforeDisplay: getComputedStyle(document.querySelector(".page-section.is-active .page-header"), "::before").display,
       headerAfterDisplay: getComputedStyle(document.querySelector(".page-section.is-active .page-header"), "::after").display,
       videoCardBeforeDisplay: document.querySelector(".page-section.is-active .video-card")
@@ -537,8 +799,12 @@ test("uses the same soft paper texture on videos and articles", async ({ page })
         : "none",
     }));
 
+    expect(texture.pageBackgroundColor).toBe("rgb(232, 232, 228)");
     expect(texture.bodyBackgroundImage).not.toContain("repeating-linear-gradient");
+    expect(Number(texture.beforeOpacity)).toBeGreaterThanOrEqual(0.58);
     expect(texture.beforeBackgroundImage).toContain("data:image/svg+xml");
+    expect(texture.afterBackgroundImage).toContain("radial-gradient");
+    expect(texture.afterBackgroundImage).toContain("linear-gradient");
     expect(texture.headerBeforeDisplay).toBe("none");
     expect(texture.headerAfterDisplay).toBe("none");
     expect(texture.videoCardBeforeDisplay).toBe("none");
@@ -572,26 +838,56 @@ test("renders the CV style about profile", async ({ page }) => {
     eyebrow: document.querySelector(".cv-eyebrow")?.textContent?.trim(),
     title: document.querySelector(".cv-name")?.textContent?.trim(),
     subtitle: document.querySelector(".cv-title")?.textContent?.trim(),
+    titleFont: document.querySelector(".cv-name")
+      ? getComputedStyle(document.querySelector(".cv-name")).fontFamily
+      : "",
     highlightCount: document.querySelectorAll(".cv-highlight").length,
     timelineCount: document.querySelectorAll(".cv-timeline-item").length,
     skillColumnCount: document.querySelectorAll(".cv-skill-column").length,
     roles: [...document.querySelectorAll(".cv-role")].map((node) => node.textContent?.trim()),
     quote: document.querySelector(".cv-quote")?.textContent?.trim(),
+    text: document.querySelector(".cv-page")?.textContent ?? "",
+    emphasisCount: document.querySelectorAll(".cv-emphasis").length,
+    emphasisColor: document.querySelector(".cv-emphasis")
+      ? getComputedStyle(document.querySelector(".cv-emphasis")).color
+      : null,
   }));
 
   expect(about.activePage).toBe("about");
   expect(about.eyebrow).toBe("CURRICULUM VITAE / 2026");
   expect(about.title).toBe("马 聪");
-  expect(about.subtitle).toContain("工业自控售前工程师");
+  expect(about.titleFont).toContain("STXingkai");
+  expect(about.subtitle).toContain("工业自控售前");
   expect(about.highlightCount).toBe(3);
   expect(about.timelineCount).toBe(3);
   expect(about.skillColumnCount).toBe(3);
   expect(about.roles).toEqual([
-    "工业自控售前工程师",
-    "供应链跟单 / 大宗采购",
-    "工程现场驻场工程师",
+    "销售助理工程师 / 售前工作",
+    "售后工程师 / 成套设备安装调试",
+    "售后服务 / 贸易部经理助理",
   ]);
   expect(about.quote).toBe("\"最漂亮的图纸,也必须在现场扎根。\"");
+  for (const resumeDetail of [
+    "新疆财经大学",
+    "计算机科学与技术",
+    "经纬纺织机械股份新疆有限公司",
+    "库车协益纺织科技 OEM 棉纱项目",
+    "瑞士立达集团技术培训",
+    "南通中实仓单质押项目",
+    "上海东方泵业有限公司",
+    "阿拉尔四团农田灌溉项目 46 台水泵",
+    "新疆奥尼特自控设备有限公司",
+    "湖北宜化合成氨项目",
+    "中泰阜康能源项目",
+    "凡事有交代，件件有着落，事事有回音",
+  ]) {
+    expect(about.text).toContain(resumeDetail);
+  }
+  expect(about.text).not.toContain("新疆轻工职业技术学院");
+  expect(about.text).not.toContain("班干部");
+  expect(about.text).not.toContain("奖学金");
+  expect(about.emphasisCount).toBeGreaterThanOrEqual(12);
+  expect(about.emphasisColor).toBe("rgb(168, 58, 50)");
 });
 
 test("uses the R2 portrait image on the CV about profile", async ({ page }) => {
