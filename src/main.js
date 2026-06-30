@@ -65,11 +65,14 @@ function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
 }
 
-function syncRoute(pageId, replace = false) {
+function syncRoute(pageId, replace = false, { clearArticle = false } = {}) {
   if (!routePages.has(pageId)) return;
 
   const nextUrl = new URL(window.location.href);
   nextUrl.searchParams.set("page", pageId);
+  if (clearArticle) {
+    nextUrl.searchParams.delete("article");
+  }
   nextUrl.hash = "";
   window.history[replace ? "replaceState" : "pushState"]({}, "", `${nextUrl.pathname}?${nextUrl.searchParams.toString()}`);
 }
@@ -211,6 +214,36 @@ if (cordPath && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) 
 }
 
 const VIDEO_API_URL = "https://bili-api.httpsaristinotionsitefoodie-57a2611a302c46ae86fc7f2d92a3a.workers.dev/";
+const VIDEO_CACHE_KEY = "alano-video-cache-v1";
+const VIDEO_FETCH_TIMEOUT_MS = 8000;
+const BILIBILI_SPACE_URL = "https://space.bilibili.com/20221512";
+const FALLBACK_VIDEO_RECORDS = [
+  {
+    bvid: "BV1dQ4y1a7J4",
+    title: "暴躁“老哥”",
+    pic: "http://i2.hdslb.com/bfs/archive/7dac1b5fd61e56b9aa416e201d7f1445560924a4.jpg",
+  },
+  {
+    bvid: "BV1ri4y1971n",
+    title: "想念没有疫情的日子",
+    pic: "http://i1.hdslb.com/bfs/archive/4bf98c2953629725fbc15eff8e68fd545dcbc495.jpg",
+  },
+  {
+    bvid: "BV1E34y197Gi",
+    title: "别人的猫最好撸",
+    pic: "http://i1.hdslb.com/bfs/archive/c42834468a3ba0e8bc6b4852f4aa19cb4d9871cb.jpg",
+  },
+  {
+    bvid: "BV1sL4y1a7Be",
+    title: "累了",
+    pic: "http://i2.hdslb.com/bfs/archive/d840503ee8d478439138511be1750f2128d6cf18.jpg",
+  },
+  {
+    bvid: "BV1TL411t75z",
+    title: "The Circle Comes Full Circle",
+    pic: "http://i1.hdslb.com/bfs/archive/f6030362fd6f965b2bc815d2cb2ac52527b80868.jpg",
+  },
+];
 
 function getRequestedPage() {
   const url = new URL(window.location.href);
@@ -282,6 +315,7 @@ function updatePageVisibility() {
     } else {
       link.removeAttribute("aria-current");
     }
+    link.classList.toggle("active", isActive);
   });
 
   if (activePageId === "images") {
@@ -312,16 +346,54 @@ let dynamicVideos = [];
 let activeVideoBvid = "";
 
 function normalizeVideoRecord(video) {
-  const thumbnail = video.pic?.startsWith("http") ? video.pic.replace(/^http:/, "https:") : `https:${video.pic}`;
+  const thumbnail = video.pic
+    ? (video.pic.startsWith("http") ? video.pic.replace(/^http:/, "https:") : `https:${video.pic}`)
+    : "";
   return {
     platform: "Bilibili",
-    title: video.title,
+    title: video.title || "未命名视频",
     duration: video.duration || "",
     bvid: video.bvid,
     watchUrl: `https://www.bilibili.com/video/${video.bvid}/`,
     embedUrl: `https://player.bilibili.com/player.html?bvid=${video.bvid}&page=1&autoplay=1&high_quality=1&as_wide=1`,
     thumbnail,
   };
+}
+
+function getFallbackVideos() {
+  return FALLBACK_VIDEO_RECORDS.map(normalizeVideoRecord);
+}
+
+function getCachedVideos() {
+  try {
+    const cached = JSON.parse(localStorage.getItem(VIDEO_CACHE_KEY) || "[]");
+    return Array.isArray(cached) ? cached : [];
+  } catch {
+    return [];
+  }
+}
+
+function cacheVideos(videos) {
+  try {
+    localStorage.setItem(VIDEO_CACHE_KEY, JSON.stringify(videos));
+  } catch {
+    // Cache write can fail in private mode; the video list still renders.
+  }
+}
+
+async function fetchVideosWithTimeout() {
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), VIDEO_FETCH_TIMEOUT_MS);
+
+  try {
+    const response = await fetch(VIDEO_API_URL, { signal: controller.signal });
+    if (!response.ok) {
+      throw new Error("video api failed");
+    }
+    return response.json();
+  } finally {
+    window.clearTimeout(timeout);
+  }
 }
 
 function closeVideoModal() {
@@ -342,6 +414,7 @@ function renderVideoGrid(videos) {
   if (!videoGrid) return;
 
   videoGrid.innerHTML = "";
+  dynamicVideos = videos;
 
   videos.forEach((video, index) => {
     const card = document.createElement("button");
@@ -356,7 +429,7 @@ function renderVideoGrid(videos) {
     card.innerHTML = `
       <span class="video-card__media video-media">
         ${index === 0 ? '<span class="video-card__badge">最新</span>' : ""}
-        <img src="${video.thumbnail}" alt="${video.title}视频封面" loading="lazy" referrerpolicy="no-referrer">
+        <img src="${video.thumbnail}" alt="${video.title}视频封面" loading="lazy" referrerpolicy="no-referrer" onerror="this.closest('.video-card__media')?.classList.add('is-missing-image'); this.remove();">
         <span class="video-media__fallback" aria-hidden="true"></span>
       </span>
       <span class="video-card__body">
@@ -374,20 +447,31 @@ function renderVideoGrid(videos) {
 async function loadDynamicVideos() {
   if (!videoGrid) return;
 
-  try {
-    const response = await fetch(VIDEO_API_URL);
-    if (!response.ok) {
-      throw new Error("video api failed");
+  const cachedVideos = getCachedVideos();
+  if (cachedVideos.length) {
+    renderVideoGrid(cachedVideos);
+    if (videoLoadingState) {
+      videoLoadingState.hidden = true;
     }
+  } else {
+    renderVideoGrid(getFallbackVideos());
+    if (videoLoadingState) {
+      videoLoadingState.hidden = true;
+    }
+  }
 
-    const payload = await response.json();
-    dynamicVideos = Array.isArray(payload) ? payload.map(normalizeVideoRecord) : [];
+  try {
+    const payload = await fetchVideosWithTimeout();
+    const videos = Array.isArray(payload)
+      ? payload.filter((video) => video?.bvid && video?.pic).map(normalizeVideoRecord)
+      : [];
 
-    if (!dynamicVideos.length) {
+    if (!videos.length) {
       throw new Error("empty video payload");
     }
 
-    renderVideoGrid(dynamicVideos);
+    cacheVideos(videos);
+    renderVideoGrid(videos);
 
     if (videoLoadingState) {
       videoLoadingState.hidden = true;
@@ -401,8 +485,9 @@ async function loadDynamicVideos() {
       videoLoadingState.hidden = true;
     }
 
-    if (videoErrorState) {
+    if (videoErrorState && !cachedVideos.length && !videoGrid.children.length) {
       videoErrorState.hidden = false;
+      videoErrorState.innerHTML = `视频接口暂时不可用。可以先前往 <a href="${BILIBILI_SPACE_URL}" target="_blank" rel="noopener noreferrer">Bilibili 主页</a> 查看。`;
     }
   }
 }
@@ -423,30 +508,47 @@ const images = [
     title: "楼间窄巷",
     description: "午后从楼上望下去，有人穿过窄窄的夹缝，像一句没说完的话。",
     location: "城市巷道",
+    camera: "Apple iPhone 8",
   },
   {
     src: "https://img.cong.uk/photo/P2.jpg",
     title: "雨中的街铺",
     description: "雨把招牌和车灯揉在一起，街边的小店还亮着，路人各自赶路。",
     location: "雨中街口",
+    camera: "Apple iPhone 8",
   },
   {
     src: "https://img.cong.uk/photo/P3.JPG",
     title: "远处的田线",
     description: "风从空地上过去，人小得像点，远处的线条慢慢铺开。",
     location: "田野远景",
+    camera: "SONY DSC-RX100M7",
+    focalLength: "41mm / 113mm equiv.",
+    aperture: "f/4.5",
+    shutter: "1/125s",
+    iso: "ISO 400",
   },
   {
     src: "https://img.cong.uk/photo/P4.JPG",
     title: "楼下人群",
     description: "楼下有人等车，有人说话，城市在玻璃和车道之间短暂停住。",
     location: "街楼之间",
+    camera: "SONY DSC-RX100M7",
+    focalLength: "9mm / 24mm equiv.",
+    aperture: "f/3.5",
+    shutter: "1/125s",
+    iso: "ISO 100",
   },
   {
     src: "https://img.cong.uk/photo/P5.JPG",
     title: "广场边缘",
     description: "人群从身边散开，一个侧影停在前面，像刚好错过的片刻。",
     location: "城市广场",
+    camera: "SONY DSC-RX100M7",
+    focalLength: "50mm / 135mm equiv.",
+    aperture: "f/4.5",
+    shutter: "1/125s",
+    iso: "ISO 800",
   },
   {
     src: "https://img.cong.uk/photo/P6.jpg",
@@ -471,12 +573,23 @@ const images = [
     title: "街边回望",
     description: "她回头的一瞬间，后面的街灯和行人都退成了背景。",
     location: "街边",
+    camera: "SONY DSC-RX100M7",
+    focalLength: "10mm / 26mm equiv.",
+    aperture: "f/3.2",
+    shutter: "1/30s",
+    iso: "ISO 250",
   },
   {
     src: "https://img.cong.uk/photo/P10.jpg",
     title: "小店室内",
     description: "桌椅收拾得很安静，灯光落在木头上，像有人刚刚离开。",
     location: "室内小店",
+    camera: "SONY ILCE-7RM2",
+    lens: "FE 24mm F1.4 GM",
+    focalLength: "24mm / 24mm equiv.",
+    aperture: "f/2",
+    shutter: "1/160s",
+    iso: "ISO 2000",
   },
 ];
 
@@ -541,13 +654,30 @@ const viewerSize = document.querySelector("[data-viewer-size]");
 const viewerLocation = document.querySelector("[data-viewer-location]");
 const viewerCamera = document.querySelector("[data-viewer-camera]");
 const viewerLens = document.querySelector("[data-viewer-lens]");
+const viewerFocalLength = document.querySelector("[data-viewer-focal-length]");
+const viewerAperture = document.querySelector("[data-viewer-aperture]");
+const viewerShutter = document.querySelector("[data-viewer-shutter]");
+const viewerIso = document.querySelector("[data-viewer-iso]");
 const viewerCloseButtons = document.querySelectorAll("[data-viewer-close]");
 const viewerPrevious = document.querySelector("[data-viewer-previous]");
 const viewerNext = document.querySelector("[data-viewer-next]");
 let activeViewerIndex = 0;
 
+function setViewerField(node, value) {
+  if (!node) return;
+
+  const row = node.closest("div");
+  const hasValue = typeof value === "string" ? value.trim().length > 0 : Boolean(value);
+
+  if (row) row.hidden = !hasValue;
+  if (hasValue) node.textContent = value;
+}
+
 function updateViewerSize() {
   if (!viewerImage || !viewerSize) return;
+
+  const row = viewerSize.closest("div");
+  if (row) row.hidden = false;
 
   if (viewerImage.naturalWidth && viewerImage.naturalHeight) {
     viewerSize.textContent = `${viewerImage.naturalWidth} × ${viewerImage.naturalHeight}`;
@@ -563,11 +693,15 @@ function showViewerImage(index) {
   const activeItem = images[activeViewerIndex];
   viewerImage.src = activeItem.src;
   viewerImage.alt = activeItem.title;
-  if (viewerTitle) viewerTitle.textContent = activeItem.title;
-  if (viewerDescription) viewerDescription.textContent = activeItem.description;
-  if (viewerLocation) viewerLocation.textContent = activeItem.location || "未记录";
-  if (viewerCamera) viewerCamera.textContent = activeItem.camera || "未记录";
-  if (viewerLens) viewerLens.textContent = activeItem.lens || "未记录";
+  setViewerField(viewerTitle, activeItem.title);
+  setViewerField(viewerDescription, activeItem.description);
+  setViewerField(viewerLocation, activeItem.location);
+  setViewerField(viewerCamera, activeItem.camera);
+  setViewerField(viewerLens, activeItem.lens);
+  setViewerField(viewerFocalLength, activeItem.focalLength);
+  setViewerField(viewerAperture, activeItem.aperture);
+  setViewerField(viewerShutter, activeItem.shutter);
+  setViewerField(viewerIso, activeItem.iso);
   updateViewerSize();
 }
 
@@ -675,7 +809,7 @@ navLinks.forEach((link) => {
     const pageId = new URL(link.href, window.location.href).searchParams.get("page");
     if (!routePages.has(pageId)) return;
 
-    syncRoute(pageId);
+    syncRoute(pageId, false, { clearArticle: true });
     updatePageVisibility();
   });
 });

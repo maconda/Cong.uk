@@ -85,17 +85,7 @@
         </section>
 
         <section class="gallery-viewer" aria-label="图片查看器" aria-hidden="true">
-          <aside class="gallery-viewer__rail" aria-label="查看器分类">
-            <button class="gallery-viewer__back" type="button" data-viewer-close>返回</button>
-            <nav class="gallery-viewer__nav" aria-label="图片分类">
-              <span>精选</span>
-              <span>最新</span>
-              <span>随览</span>
-              <span>附近</span>
-              <span>远方</span>
-              <span class="is-current">发现</span>
-            </nav>
-          </aside>
+          <aside class="gallery-viewer__rail" aria-hidden="true"></aside>
 
           <div class="gallery-viewer__stage">
             <header class="gallery-viewer__toolbar">
@@ -109,10 +99,6 @@
             </figure>
 
             <footer class="gallery-viewer__metadata" aria-label="图片参数">
-              <div class="gallery-viewer__rating" aria-label="评级">
-                <span>评级</span>
-                <strong>★★★★☆</strong>
-              </div>
               <dl>
                 <div>
                   <dt>名称</dt>
@@ -128,15 +114,31 @@
                 </div>
                 <div>
                   <dt>地点</dt>
-                  <dd data-viewer-location>未记录</dd>
+                  <dd data-viewer-location></dd>
                 </div>
                 <div>
                   <dt>相机</dt>
-                  <dd data-viewer-camera>未记录</dd>
+                  <dd data-viewer-camera></dd>
                 </div>
                 <div>
                   <dt>镜头</dt>
-                  <dd data-viewer-lens>未记录</dd>
+                  <dd data-viewer-lens></dd>
+                </div>
+                <div>
+                  <dt>焦段</dt>
+                  <dd data-viewer-focal-length></dd>
+                </div>
+                <div>
+                  <dt>光圈</dt>
+                  <dd data-viewer-aperture></dd>
+                </div>
+                <div>
+                  <dt>快门</dt>
+                  <dd data-viewer-shutter></dd>
+                </div>
+                <div>
+                  <dt>ISO</dt>
+                  <dd data-viewer-iso></dd>
                 </div>
               </dl>
             </footer>
@@ -214,137 +216,79 @@
         </section>
 
         <section class="page-section text-page" id="about" data-page aria-labelledby="about-title" hidden>
-          <article class="about-portfolio" aria-label="关于我与职业发展时间轴">
-            <section class="intro-section" aria-labelledby="about-title">
-              <div class="intro-badge">About Me</div>
-              <h1 class="intro-title" id="about-title">你好，我是马聪。一个在技术、供应链与客户诉求之间架桥的跨界行动者。</h1>
-              <div class="intro-text">
-                <p>我长期活跃于<strong>工程现场一线、现代供应链跟单与工业自控设备售前解决方案</strong>之中。过去的经历让我明白：最漂亮的图纸也必须在现场扎根，最复杂的商务流程也可以被拆解落地。</p>
-                <p>我喜欢把零散复杂的信息整理成严谨结构，把客户模糊多变的需求转化为可执行的闭环方案。无论是独立排险、大宗成本核算还是大客户信任攻坚，我都追求<strong>高效推进、凡事提前推演</strong>。工作之外，摄影和旅行让我保持对世界的好奇心与敏锐观察。</p>
+          <article class="cv-page" aria-label="马聪个人职业主页">
+            <header class="cv-header">
+              <div class="cv-portrait">
+                <span class="cv-portrait__mark" aria-hidden="true">MC</span>
               </div>
+              <div class="cv-name-block">
+                <div class="cv-eyebrow">CURRICULUM VITAE / 2026</div>
+                <h1 class="cv-name" id="about-title">马 聪</h1>
+                <div class="cv-title">工业自控售前工程师 · 供应链跨界从业者<br>在技术、供应链与客户诉求之间架桥</div>
+                <div class="cv-contacts">
+                  <span>Based in China</span>
+                  <span>nour109551@gmail.com</span>
+                  <span>cong.uk</span>
+                </div>
+              </div>
+            </header>
 
-              <div class="trait-grid" aria-label="核心特质">
-                <div class="trait-card">
-                  <span class="trait-icon-tag">极致靠谱</span>
-                  <div class="trait-name">凡事有交代，事事有回音</div>
-                  <div class="trait-desc">能在无外协支持下 2 天独立攻坚成套自控组安装，也能连续 15 天守在现场妥善平息工况选型冲突。</div>
+            <section class="cv-section cv-about">
+              <div class="cv-section-head"><span class="cv-num">01</span><h2>个人简介</h2><span class="cv-en">ABOUT</span></div>
+              <p>长期活跃于<strong>工程现场一线、现代供应链跟单与工业自控设备售前解决方案</strong>领域。具备从机械制图、电气接线到大宗采购、供应链金融工具的完整跨域实操经验。</p>
+              <p>擅长将零散复杂的信息整理为严谨结构，将客户模糊多变的需求转化为可执行的闭环方案。工作风格注重<strong>提前推演、现场扎根、闭环交付</strong>。</p>
+            </section>
+
+            <section class="cv-section">
+              <div class="cv-section-head"><span class="cv-num">02</span><h2>代表性成果</h2><span class="cv-en">HIGHLIGHTS</span></div>
+              <div class="cv-highlights">
+                <div class="cv-highlight"><div class="cv-big">02<sup>D</sup></div><div class="cv-desc">无外协支持下，独立完成<br>成套自控组安装攻坚</div></div>
+                <div class="cv-highlight"><div class="cv-big">15<sup>D</sup></div><div class="cv-desc">连续驻场，平息客户与供应商<br>之间的工况选型冲突</div></div>
+                <div class="cv-highlight"><div class="cv-big">3<sup>+</sup></div><div class="cv-desc">工程 / 供应链 / 售前<br>跨领域无缝切换</div></div>
+              </div>
+            </section>
+
+            <section class="cv-section">
+              <div class="cv-section-head"><span class="cv-num">03</span><h2>职业经历</h2><span class="cv-en">EXPERIENCE</span></div>
+              <div class="cv-timeline-item">
+                <div class="cv-period"><span class="cv-now">NOW</span>2023 - 至今<span>约 3 年</span></div>
+                <div class="cv-body">
+                  <div class="cv-role">工业自控售前工程师</div>
+                  <div class="cv-org">自动化设备 · 解决方案</div>
+                  <ul><li>负责工业自控设备的售前方案设计与客户对接</li><li>独立完成机械制图、自控电气接线与现场调试</li><li>在客户工况与产品能力之间提供可落地的翻译与匹配</li></ul>
                 </div>
-                <div class="trait-card">
-                  <span class="trait-icon-tag">跨界融合</span>
-                  <div class="trait-name">技术底座 × 商业洞察</div>
-                  <div class="trait-desc">既懂机械制图与自控电气接线，又熟悉大宗棉纱 OEM 采购、仓单质押与供应链金融工具。</div>
+              </div>
+              <div class="cv-timeline-item">
+                <div class="cv-period">2020 - 2023<span>约 3 年</span></div>
+                <div class="cv-body">
+                  <div class="cv-role">供应链跟单 / 大宗采购</div>
+                  <div class="cv-org">现代供应链 · 大宗商品</div>
+                  <ul><li>主导大宗棉纱 OEM 采购，完成大宗成本核算与价差管控</li><li>参与仓单质押、保理、商票等供应链金融工具流转</li><li>在价格周期、库存压力与客户反馈之间建立执行闭环</li></ul>
                 </div>
-                <div class="trait-card">
-                  <span class="trait-icon-tag">深度换位</span>
-                  <div class="trait-name">以客户视角谋共赢</div>
-                  <div class="trait-desc">习惯在售前挖掘客户决策深处的控温、安全性和交付风险痛点，再循序渐进将僵局做活。</div>
+              </div>
+              <div class="cv-timeline-item">
+                <div class="cv-period">2018 - 2020<span>约 2 年</span></div>
+                <div class="cv-body">
+                  <div class="cv-role">工程现场驻场工程师</div>
+                  <div class="cv-org">工程项目 · 一线执行</div>
+                  <ul><li>长期驻扎工程现场一线，负责设备安装与调试</li><li>把漂亮的图纸转化为能稳定运行的产线</li><li>养成凡事提前推演、事事有回音的工作底色</li></ul>
                 </div>
               </div>
             </section>
 
-            <header class="timeline-header">
-              <h2>职业探索演进进程</h2>
-              <p>从实干技术到商业协同，再到大客户方案策划的真实路径。</p>
-            </header>
+            <section class="cv-section">
+              <div class="cv-section-head"><span class="cv-num">04</span><h2>核心能力</h2><span class="cv-en">CAPABILITIES</span></div>
+              <div class="cv-skills">
+                <div class="cv-skill-column"><h4>技术底座</h4><ul><li>机械制图</li><li>自控电气接线</li><li>成套设备调试</li><li>工况选型分析</li></ul></div>
+                <div class="cv-skill-column"><h4>商业洞察</h4><ul><li>大宗成本核算</li><li>OEM 采购管理</li><li>仓单质押 / 供应链金融</li><li>大客户信任攻坚</li></ul></div>
+                <div class="cv-skill-column"><h4>方法论</h4><ul><li>结构化信息整理</li><li>需求转化为闭环</li><li>提前推演 / 现场扎根</li><li>跨部门协作</li></ul></div>
+              </div>
+            </section>
 
-            <div class="timeline-body">
-              <div class="timeline-spine" aria-hidden="true"></div>
-
-              <section class="timeline-node">
-                <div class="node-time">
-                  <span class="time-range">2017 - 2022</span>
-                  <span class="time-duration">共 4 年 9 个月</span>
-                </div>
-                <div class="node-pointer" aria-hidden="true"></div>
-                <div class="node-card">
-                  <div class="card-meta">
-                    <h3 class="company-name">经纬纺织机械股份新疆有限公司</h3>
-                    <span class="role-badge">售后服务工程师 → 贸易部经理助理</span>
-                  </div>
-                  <div class="sub-projects">
-                    <div class="project-row">
-                      <div class="project-title">现场装配与调试效能管理</div>
-                      <p class="project-desc">在阿克苏华孚、沙湾银鹰、石河子睿晟等项目中，从一线调机到担任小组长，通过交叉施工法克服设备延期阻碍，带领团队完成整机调试交付。</p>
-                    </div>
-                    <div class="project-row">
-                      <div class="project-title">大宗 OEM 供应链管理</div>
-                      <p class="project-desc">主导协益、润泰等 OEM 项目，前往瑞士立达受训，跑通原料采购、精益生产、市场反馈的闭环，并组织 30 多位新员工生产线培训。</p>
-                    </div>
-                    <div class="project-row">
-                      <div class="project-title">供应链金融与期货管理</div>
-                      <p class="project-desc">落地南通中实仓单标准化质押与三方监管；对接浙江金柯桥供应链开展大宗库存价格周期核算；参与如意纺色纺商票、保理等流转操作。</p>
-                    </div>
-                  </div>
-                  <div class="skill-pills">
-                    <span class="pill">整机工程装调</span>
-                    <span class="pill">立达受训技术</span>
-                    <span class="pill">仓单标准化</span>
-                    <span class="pill">保理/商票金融</span>
-                    <span class="pill">新员工培训</span>
-                  </div>
-                </div>
-              </section>
-
-              <section class="timeline-node">
-                <div class="node-time">
-                  <span class="time-range">2022 - 2023</span>
-                  <span class="time-duration">共 1 年</span>
-                </div>
-                <div class="node-pointer" aria-hidden="true"></div>
-                <div class="node-card">
-                  <div class="card-meta">
-                    <h3 class="company-name">上海东方泵业有限公司</h3>
-                    <span class="role-badge">售后服务工程师</span>
-                  </div>
-                  <div class="sub-projects">
-                    <div class="project-row">
-                      <div class="project-title">阿拉尔灌溉项目工况危机处理</div>
-                      <p class="project-desc">面对售前选型欠缺造成的设备与工况冲突，15 天驻场攻坚并安抚客户，妥善解决 46 台泵的系统问题。</p>
-                    </div>
-                    <div class="project-row">
-                      <div class="project-title">成套电气及自控泵组装调</div>
-                      <p class="project-desc">无电工外协支持下，独立研读图纸拉线接电，2 天内完成阿克苏成套水泵安装调试；喀什水淹事故中协调外部力量迅速恢复通水。</p>
-                    </div>
-                  </div>
-                  <div class="skill-pills">
-                    <span class="pill">水泵自控集成</span>
-                    <span class="pill">电气识图布线</span>
-                    <span class="pill">现场危机公关</span>
-                    <span class="pill">跨部门协调</span>
-                  </div>
-                </div>
-              </section>
-
-              <section class="timeline-node">
-                <div class="node-time">
-                  <span class="time-range">2023 - 至今</span>
-                  <span class="time-duration">保持好奇心与行动力</span>
-                </div>
-                <div class="node-pointer" aria-hidden="true"></div>
-                <div class="node-card">
-                  <div class="card-meta">
-                    <h3 class="company-name">新疆奥尼特自控设备有限公司</h3>
-                    <span class="role-badge">销售助理工程师（售前技术支持）</span>
-                  </div>
-                  <div class="sub-projects">
-                    <div class="project-row">
-                      <div class="project-title">湖北宜化合成氨自动化改造</div>
-                      <p class="project-desc">站在大客户视角深入发掘严苛控温和核心自控阀组精度痛点，针对性输出客制化方案并推动订单目标达成。</p>
-                    </div>
-                    <div class="project-row">
-                      <div class="project-title">中泰阜康能源项目大客户攻坚</div>
-                      <p class="project-desc">面对高技术门槛和拒绝沟通的壁垒，推行循序渐进的客情管理，让客户态度从抗拒避见转化为主动接洽攀谈。</p>
-                    </div>
-                  </div>
-                  <div class="skill-pills">
-                    <span class="pill">自控改造方案</span>
-                    <span class="pill">工业阀门控制</span>
-                    <span class="pill">大客户客情攻坚</span>
-                    <span class="pill">决策痛点发掘</span>
-                  </div>
-                </div>
-              </section>
-            </div>
+            <footer class="cv-footer">
+              <span class="cv-quote">"最漂亮的图纸,也必须在现场扎根。"</span>
+              <span>MA CONG · 2026</span>
+            </footer>
           </article>
         </section>
 

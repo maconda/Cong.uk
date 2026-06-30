@@ -19,6 +19,7 @@ cong.uk/.git/
 # IDE
 .vscode/
 .idea/
+.superpowers/
 
 # OS files
 Thumbs.db
