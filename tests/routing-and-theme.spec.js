@@ -594,6 +594,24 @@ test("renders the CV style about profile", async ({ page }) => {
   expect(about.quote).toBe("\"最漂亮的图纸,也必须在现场扎根。\"");
 });
 
+test("uses the R2 portrait image on the CV about profile", async ({ page }) => {
+  await page.goto("/?page=about", { waitUntil: "domcontentloaded" });
+
+  const portrait = await page.evaluate(() => {
+    const image = document.querySelector(".cv-portrait img");
+    const marker = document.querySelector(".cv-portrait__mark");
+    return {
+      src: image?.getAttribute("src"),
+      alt: image?.getAttribute("alt"),
+      markerExists: Boolean(marker),
+    };
+  });
+
+  expect(portrait.src).toBe("https://pub-87e925c7796a4e538d6501e03f59add6.r2.dev/photo/portrait.jpg");
+  expect(portrait.alt).toBe("马聪");
+  expect(portrait.markerExists).toBe(false);
+});
+
 test("keeps the CV about page consistent and readable in both themes", async ({ page }) => {
   await page.goto("/?page=about", { waitUntil: "domcontentloaded" });
 

@@ -4135,21 +4135,6 @@ body.viewer-open .site-copyright {
   transform: translateX(-58%);
 }
 
-.cv-portrait__mark {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  color: var(--page-bg);
-  background:
-    radial-gradient(circle at 32% 26%, color-mix(in srgb, var(--accent) 24%, transparent), transparent 34%),
-    linear-gradient(145deg, var(--text-primary), color-mix(in srgb, var(--text-primary) 72%, var(--accent)));
-  font-family: "Noto Serif SC", "Songti SC", serif;
-  font-size: 34px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-}
-
 .cv-name-block {
   min-width: 0;
   flex: 1;
