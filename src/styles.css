@@ -1,7 +1,15 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: "R2WenKai";
+  src:
+    url("https://pub-03b5a2e995e948508262312977ad5792.r2.dev/fonts/%E9%9C%9E%E9%B9%9C%E6%96%87%E6%A5%B7.woff2") format("woff2"),
+    url("https://pub-03b5a2e995e948508262312977ad5792.r2.dev/fonts/%E9%9C%9E%E9%B9%9C%E6%96%87%E6%A5%B7.ttf") format("truetype");
+  font-display: swap;
+}
+
 :root {
-  --bg: #e8e8e4;
+  --bg: #f5f5f1;
   --ink: #1f2020;
   --ink-2: #2b2d2d;
   --muted: #545a57;
@@ -19,6 +27,7 @@
   --image-max-width: min(1000px, var(--content-area-width));
   --image-max-height: max(240px, calc(100vh - 120px));
   --body-copy-font: "Helvetica Neue", Helvetica, Arial, "PingFang SC", "Hiragino Sans GB", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
+  --article-serif-font: "R2WenKai", "LXGW WenKai", "霞鹜文楷", "Kaiti SC", "KaiTi", "STKaiti", "Songti SC", "Noto Serif SC", serif;
   --about-latin-font: "Helvetica Neue", Helvetica, Arial, sans-serif;
   --body-copy-size: 10.5px;
   --body-copy-chinese-size: 12.5px;
@@ -511,9 +520,9 @@ button {
 .video-modal__backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(12, 12, 11, 0.56);
-  backdrop-filter: saturate(120%) blur(18px);
-  -webkit-backdrop-filter: saturate(120%) blur(18px);
+  background: rgba(15, 15, 14, 0.74);
+  backdrop-filter: saturate(105%) blur(30px);
+  -webkit-backdrop-filter: saturate(105%) blur(30px);
 }
 
 .video-modal__dialog {
@@ -3593,7 +3602,7 @@ html[data-theme="light"] .gallery-viewer__metadata {
 
 /* Alano visual override: token-driven editorial finish. */
 :root {
-  --bg: #e8e8e4;
+  --bg: #f5f5f1;
   --ink: #1f2020;
   --ink-2: #2b2d2d;
   --muted: #545a57;
@@ -3617,10 +3626,12 @@ html[data-theme="light"] body::before {
   inset: 0;
   pointer-events: none;
   z-index: 1;
-  opacity: 0.6;
+  opacity: 0.34;
   mix-blend-mode: multiply;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.6' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.18  0 0 0 0 0.19  0 0 0 0 0.18  0 0 0 0.24 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
-  background-size: 220px 220px;
+  background-image:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.11  0 0 0 0 0.11  0 0 0 0 0.105  0 0 0 0.34 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>"),
+    radial-gradient(circle at 20% 30%, rgba(0, 0, 0, 0.035) 0 0.8px, transparent 1.4px);
+  background-size: 180px 180px, 5px 5px;
   mask-image: none;
 }
 
@@ -3631,10 +3642,10 @@ html[data-theme="light"] body::after {
   pointer-events: none;
   z-index: 1;
   background:
-    radial-gradient(ellipse at 50% -10%, rgba(210, 210, 202, 0.2), transparent 55%),
-    radial-gradient(circle at 18% 24%, rgba(126, 132, 128, 0.08), transparent 28%),
-    radial-gradient(circle at 78% 72%, rgba(255, 255, 250, 0.24), transparent 32%),
-    linear-gradient(135deg, rgba(70, 76, 72, 0.035), transparent 38%, rgba(255, 255, 255, 0.12));
+    radial-gradient(ellipse at 50% -10%, rgba(255, 255, 255, 0.4), transparent 54%),
+    radial-gradient(circle at 18% 24%, rgba(90, 94, 92, 0.035), transparent 28%),
+    radial-gradient(circle at 78% 72%, rgba(255, 255, 255, 0.28), transparent 32%),
+    linear-gradient(135deg, rgba(70, 76, 72, 0.018), transparent 38%, rgba(255, 255, 255, 0.18));
 }
 
 html[data-theme="dark"] body {
@@ -4807,9 +4818,9 @@ html[data-theme="light"] .contact-link::before {
   background: none !important;
 }
 
-/* Final gallery/nav fixes: use the desktop width fully and keep active nav text stable. */
+/* Final gallery/nav fixes: keep nav stable and align page surfaces on one axis. */
 #images .mobile-image-list {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .site-nav a::before,
@@ -4859,10 +4870,12 @@ html[data-theme="light"] .contact-link::before {
   }
 }
 
-/* Final module balance: center each page surface inside the space left by the sidebar. */
+/* Final module balance: center page surfaces on the same axis. */
 #images .gallery-index-header,
 #images .mobile-image-list,
+#videos .page-header,
 #articles .articles-stack,
+#articles .page-header,
 #videos .video-page,
 #about .about-portfolio,
 #about .cv-page,
@@ -4881,6 +4894,71 @@ html[data-theme="light"] .contact-link::before {
 #contact .page-header,
 #contact .contact-links {
   width: min(100%, 360px);
+}
+
+/* Final reading/gallery balance. */
+.content {
+  width: min(1120px, 100%);
+}
+
+#images .gallery-index-header,
+#images .mobile-image-list,
+#videos .page-header,
+#videos .video-page,
+#articles .page-header,
+#articles .articles-stack {
+  width: min(100%, 1060px);
+  max-width: min(100%, 1060px);
+}
+
+#images .mobile-image-list {
+  gap: clamp(22px, 2.6vw, 34px);
+}
+
+#articles .page-header,
+#articles .articles-stack,
+#articles .article-detail {
+  width: min(100%, 920px);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#articles .page-header,
+#articles .articles-stack {
+  width: min(100%, 1060px);
+  max-width: min(100%, 1060px);
+}
+
+#articles .article-card__link {
+  grid-template-columns: minmax(0, 1fr) clamp(220px, 23vw, 250px);
+  column-gap: clamp(26px, 4vw, 46px);
+}
+
+#articles .article-card__title,
+#articles .article-feature__title {
+  font-family: var(--article-serif-font);
+  letter-spacing: 0.01em;
+}
+
+#articles .article-card__excerpt,
+#articles .article-feature__lead,
+#articles .article-feature__body p {
+  font-family: var(--article-serif-font);
+  font-size: 15px;
+  line-height: 1.95;
+  letter-spacing: 0.02em;
+}
+
+#articles .article-feature__body {
+  max-width: 42em;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (min-width: 1280px) {
+  #images .mobile-image-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
 .page-header::before,

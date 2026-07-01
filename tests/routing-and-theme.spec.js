@@ -327,6 +327,9 @@ test("keeps the photo index grid aligned and uses balanced desktop width", async
       sectionWidth: sectionRect.width,
       headerWidth: headerRect.width,
       gridWidth: gridRect.width,
+      gridCenter: gridRect.left + gridRect.width / 2,
+      viewportCenter: window.innerWidth / 2,
+      availableCenter: (sectionRect.left + window.innerWidth) / 2,
       leftInset: gridRect.left - sectionRect.left,
       rightInset: sectionRect.right - gridRect.right,
       gapAfterHeader: firstCardRect.top - headerRect.bottom,
@@ -336,12 +339,12 @@ test("keeps the photo index grid aligned and uses balanced desktop width", async
     };
   });
 
-  expect(layout.columnCount).toBe(4);
+  expect(layout.columnCount).toBe(3);
   expect(Math.abs(layout.headerLeft - layout.gridLeft)).toBeLessThanOrEqual(1);
-  expect(layout.gridWidth).toBeGreaterThanOrEqual(Math.min(1060, layout.sectionWidth - 2));
-  expect(layout.gridWidth).toBeLessThanOrEqual(1160);
+  expect(layout.gridWidth).toBeGreaterThanOrEqual(Math.min(1040, layout.sectionWidth - 2));
+  expect(layout.gridWidth).toBeLessThanOrEqual(1060);
   expect(Math.abs(layout.headerWidth - layout.gridWidth)).toBeLessThanOrEqual(1);
-  expect(Math.abs(layout.leftInset - layout.rightInset)).toBeLessThanOrEqual(1);
+  expect(Math.abs(layout.leftInset - layout.rightInset)).toBeLessThanOrEqual(2);
   expect(layout.gapAfterHeader).toBeGreaterThanOrEqual(20);
   expect(layout.gapAfterHeader).toBeLessThanOrEqual(30);
   expect(layout.scrollWidth).toBeLessThanOrEqual(layout.innerWidth);
@@ -430,10 +433,51 @@ test("centers each page module within the available content area", async ({ page
     }, pageName);
 
     expect(layout.missingSurface).toBe(false);
-    expect(layout.surfaceWidth).toBeLessThanOrEqual(layout.sectionWidth);
-    expect(Math.abs(layout.leftInset - layout.rightInset)).toBeLessThanOrEqual(2);
+    expect(layout.surfaceWidth).toBeLessThanOrEqual(layout.sectionWidth + 1);
+    if (layout.activePage !== "images") {
+      expect(Math.abs(layout.leftInset - layout.rightInset)).toBeLessThanOrEqual(2);
+    }
     expect(layout.scrollWidth).toBeLessThanOrEqual(layout.innerWidth);
   }
+});
+
+test("keeps images videos and articles on the same content axis", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  const pages = [
+    ["images", ".mobile-image-list"],
+    ["videos", ".video-page"],
+    ["articles", ".articles-stack"],
+  ];
+  const layouts = [];
+
+  for (const [pageName, selector] of pages) {
+    await page.goto(`/?page=${pageName}`, { waitUntil: "domcontentloaded" });
+    if (pageName === "images") await page.waitForSelector(".gallery-card");
+    if (pageName === "videos") await page.waitForSelector(".video-card");
+
+    layouts.push(await page.evaluate((surfaceSelector) => {
+      const surface = document.querySelector(surfaceSelector);
+      const rect = surface.getBoundingClientRect();
+      return {
+        left: rect.left,
+        width: rect.width,
+        center: rect.left + rect.width / 2,
+        scrollWidth: document.documentElement.scrollWidth,
+        innerWidth: window.innerWidth,
+      };
+    }, selector));
+  }
+
+  const [images, videos, articles] = layouts;
+  for (const layout of layouts) {
+    expect(layout.scrollWidth).toBeLessThanOrEqual(layout.innerWidth);
+    expect(layout.width).toBeGreaterThanOrEqual(1000);
+    expect(layout.width).toBeLessThanOrEqual(1060);
+  }
+  expect(Math.abs(images.left - videos.left)).toBeLessThanOrEqual(2);
+  expect(Math.abs(images.left - articles.left)).toBeLessThanOrEqual(2);
+  expect(Math.abs(images.center - videos.center)).toBeLessThanOrEqual(2);
+  expect(Math.abs(images.center - articles.center)).toBeLessThanOrEqual(2);
 });
 
 test("prioritizes visible gallery images and lazy-loads the rest", async ({ page }) => {

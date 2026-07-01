@@ -217,6 +217,7 @@ const VIDEO_API_URL = "https://bili-api.httpsaristinotionsitefoodie-57a2611a302c
 const VIDEO_CACHE_KEY = "alano-video-cache-v1";
 const VIDEO_FETCH_TIMEOUT_MS = 8000;
 const BILIBILI_SPACE_URL = "https://space.bilibili.com/20221512";
+const PHOTO_ASSET_BASE_URL = "https://pub-87e925c7796a4e538d6501e03f59add6.r2.dev/photo";
 const FALLBACK_VIDEO_RECORDS = [
   {
     bvid: "BV1dQ4y1a7J4",
@@ -504,21 +505,21 @@ loadDynamicVideos();
 
 const images = [
   {
-    src: "https://img.cong.uk/photo/P1.JPG",
+    src: `${PHOTO_ASSET_BASE_URL}/P1.JPG`,
     title: "楼间窄巷",
     description: "楼缝里有一小段光，人走过去，下午也跟着轻了一下。",
     location: "城市巷道",
     camera: "Apple iPhone 8",
   },
   {
-    src: "https://img.cong.uk/photo/P2.jpg",
+    src: `${PHOTO_ASSET_BASE_URL}/P2.jpg`,
     title: "雨中的街铺",
     description: "雨没有停，店里的灯还亮着，路上的人都低着头往前走。",
     location: "雨中街口",
     camera: "Apple iPhone 8",
   },
   {
-    src: "https://img.cong.uk/photo/P3.JPG",
+    src: `${PHOTO_ASSET_BASE_URL}/P3.JPG`,
     title: "远处的田线",
     description: "地很空，远处几条线慢慢躺开，人站在那里，显得很轻。",
     location: "田野远景",
@@ -529,7 +530,7 @@ const images = [
     iso: "ISO 400",
   },
   {
-    src: "https://img.cong.uk/photo/P4.JPG",
+    src: `${PHOTO_ASSET_BASE_URL}/P4.JPG`,
     title: "楼下人群",
     description: "楼下的人等着，说着，散着，日子就在车道边停了一会儿。",
     location: "街楼之间",
@@ -540,7 +541,7 @@ const images = [
     iso: "ISO 100",
   },
   {
-    src: "https://img.cong.uk/photo/P5.JPG",
+    src: `${PHOTO_ASSET_BASE_URL}/P5.JPG`,
     title: "广场边缘",
     description: "人群往各处走，只有这个侧影停住，像替我留住一秒。",
     location: "城市广场",
@@ -551,25 +552,25 @@ const images = [
     iso: "ISO 800",
   },
   {
-    src: "https://img.cong.uk/photo/P6.jpg",
+    src: `${PHOTO_ASSET_BASE_URL}/P6.jpg`,
     title: "海边栈道",
     description: "木道通向海边，风从前面吹来，话就留在了身后。",
     location: "海岸步道",
   },
   {
-    src: "https://img.cong.uk/photo/P7.jpg",
+    src: `${PHOTO_ASSET_BASE_URL}/P7.jpg`,
     title: "夜色水岸",
     description: "水边的灯亮得安静，两个人靠着，像把夜晚坐短了一点。",
     location: "夜晚水岸",
   },
   {
-    src: "https://img.cong.uk/photo/P8.jpg",
+    src: `${PHOTO_ASSET_BASE_URL}/P8.jpg`,
     title: "街巷人流",
     description: "窄巷贴着招牌，人从中间穿过去，谁也没有打扰谁。",
     location: "街巷",
   },
   {
-    src: "https://img.cong.uk/photo/P9.jpg",
+    src: `${PHOTO_ASSET_BASE_URL}/P9.jpg`,
     title: "街边回望",
     description: "她回头看了一眼，街灯和行人都安静下来。",
     location: "街边",
@@ -580,7 +581,7 @@ const images = [
     iso: "ISO 250",
   },
   {
-    src: "https://img.cong.uk/photo/P10.jpg",
+    src: `${PHOTO_ASSET_BASE_URL}/P10.jpg`,
     title: "小店室内",
     description: "桌椅收好了，灯落在木头上，像刚有人起身离开。",
     location: "室内小店",
