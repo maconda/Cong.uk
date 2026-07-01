@@ -65,6 +65,15 @@ $env:OPENAI_API_KEY="你的 OpenAI key"
 npm run photos:merge -- --r2 --ai
 ```
 
+使用阿里云百炼 OpenAI 兼容接口时：
+
+```bash
+$env:OPENAI_API_KEY="你的阿里云百炼 API Key"
+$env:OPENAI_BASE_URL="https://llm-dhaso9vsg1r04xf0.cn-beijing.maas.aliyuncs.com/compatible-mode/v1"
+$env:OPENAI_MODEL="qwen-vl-plus"
+npm run photos:merge -- --r2 --ai
+```
+
 脚本会保留已经手写过的标题和介绍，只给新增或空白的图片补文案。生成风格固定在 `scripts/photo-manifest.mjs` 的 `buildPhotoPrompt()`：朴素、短、有一点诗意，避免工具化和常见 AI 词。
 
 ## 部署

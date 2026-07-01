@@ -6,6 +6,7 @@ import { pathToFileURL } from "node:url";
 export const PHOTO_BASE_URL = "https://pub-87e925c7796a4e538d6501e03f59add6.r2.dev/photo";
 const DEFAULT_MANIFEST = "public/photos.json";
 const IMAGE_FILE_RE = /\.(avif|gif|jpe?g|png|webp)$/i;
+const OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses";
 
 export function normalizePhotoUrl(value, baseUrl = PHOTO_BASE_URL) {
   if (/^https?:\/\//i.test(value)) return value;
@@ -58,6 +59,10 @@ export function buildR2ObjectsUrl({ accountId, bucketName, prefix = "", cursor =
   if (prefix) url.searchParams.set("prefix", prefix);
   if (cursor) url.searchParams.set("cursor", cursor);
   return url;
+}
+
+export function buildChatCompletionsUrl(baseUrl) {
+  return new URL(`${baseUrl.replace(/\/$/, "")}/chat/completions`);
 }
 
 function normalizeR2ResultItems(payload) {
@@ -134,6 +139,7 @@ function parseArgs(argv) {
     photos: [],
     ai: false,
     model: process.env.OPENAI_MODEL || "gpt-4.1-mini",
+    aiBaseUrl: process.env.OPENAI_BASE_URL || "",
     r2: false,
     accountId: process.env.CLOUDFLARE_ACCOUNT_ID || "",
     apiToken: process.env.CLOUDFLARE_API_TOKEN || "",
@@ -149,6 +155,7 @@ function parseArgs(argv) {
     else if (arg === "--photos-file") args.photos.push(...(awaitableReadList(argv[++index])));
     else if (arg === "--ai") args.ai = true;
     else if (arg === "--model") args.model = argv[++index];
+    else if (arg === "--ai-base-url") args.aiBaseUrl = argv[++index];
     else if (arg === "--r2") args.r2 = true;
     else if (arg === "--account-id") args.accountId = argv[++index];
     else if (arg === "--api-token") args.apiToken = argv[++index];
@@ -174,16 +181,16 @@ async function resolvePhotoInputs(rawPhotos) {
   return resolved;
 }
 
-async function generateCaptionWithOpenAI(record, model) {
-  if (!process.env.OPENAI_API_KEY) {
-    throw new Error("OPENAI_API_KEY is required for --ai");
-  }
+function parseCaptionJson(text) {
+  return JSON.parse(text.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim());
+}
 
-  const response = await fetch("https://api.openai.com/v1/responses", {
+async function generateCaptionWithResponses(record, { apiKey, model, fetchImpl = fetch }) {
+  const response = await fetchImpl(OPENAI_RESPONSES_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+      Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
       model,
@@ -224,7 +231,61 @@ async function generateCaptionWithOpenAI(record, model) {
   const text = payload.output_text
     || payload.output?.flatMap((item) => item.content || []).find((item) => item.type === "output_text")?.text;
   if (!text) throw new Error("OpenAI response did not include output text");
-  return JSON.parse(text);
+  return parseCaptionJson(text);
+}
+
+async function generateCaptionWithChatCompletions(record, {
+  apiKey,
+  model,
+  aiBaseUrl,
+  fetchImpl = fetch,
+}) {
+  const response = await fetchImpl(buildChatCompletionsUrl(aiBaseUrl), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model,
+      messages: [
+        {
+          role: "user",
+          content: [
+            { type: "text", text: buildPhotoPrompt(record.src) },
+            { type: "image_url", image_url: { url: record.src } },
+          ],
+        },
+      ],
+      response_format: { type: "json_object" },
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`OpenAI-compatible caption request failed: ${response.status} ${await response.text()}`);
+  }
+
+  const payload = await response.json();
+  const text = payload.choices?.[0]?.message?.content;
+  if (!text) throw new Error("OpenAI-compatible response did not include message content");
+  return parseCaptionJson(text);
+}
+
+export async function generateCaption(record, {
+  apiKey = process.env.OPENAI_API_KEY,
+  model = process.env.OPENAI_MODEL || "gpt-4.1-mini",
+  aiBaseUrl = process.env.OPENAI_BASE_URL || "",
+  fetchImpl = fetch,
+} = {}) {
+  if (!apiKey) {
+    throw new Error("OPENAI_API_KEY is required for --ai");
+  }
+
+  if (aiBaseUrl) {
+    return generateCaptionWithChatCompletions(record, { apiKey, model, aiBaseUrl, fetchImpl });
+  }
+
+  return generateCaptionWithResponses(record, { apiKey, model, fetchImpl });
 }
 
 export function isMainModule(importMetaUrl, argvEntry = process.argv[1]) {
@@ -253,7 +314,10 @@ async function main() {
   if (args.ai) {
     for (const record of merged) {
       if (record.title && record.description) continue;
-      const caption = await generateCaptionWithOpenAI(record, args.model);
+      const caption = await generateCaption(record, {
+        model: args.model,
+        aiBaseUrl: args.aiBaseUrl,
+      });
       record.title = caption.title;
       record.description = caption.description;
       record.location = caption.location || record.location || "";

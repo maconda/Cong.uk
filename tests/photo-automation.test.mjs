@@ -5,6 +5,8 @@ import {
   mergePhotoRecords,
   buildPhotoPrompt,
   buildR2ObjectsUrl,
+  buildChatCompletionsUrl,
+  generateCaption,
   isMainModule,
   listR2PhotoKeys,
   normalizePhotoUrl,
@@ -114,4 +116,59 @@ test("detects direct CLI execution from Windows paths with Chinese characters", 
     ),
     true,
   );
+});
+
+test("builds chat completions URLs for OpenAI-compatible Aliyun endpoints", () => {
+  const url = buildChatCompletionsUrl(
+    "https://llm-dhaso9vsg1r04xf0.cn-beijing.maas.aliyuncs.com/compatible-mode/v1",
+  );
+
+  assert.equal(
+    url.href,
+    "https://llm-dhaso9vsg1r04xf0.cn-beijing.maas.aliyuncs.com/compatible-mode/v1/chat/completions",
+  );
+});
+
+test("generates captions through OpenAI-compatible chat completions endpoints", async () => {
+  let requestUrl = "";
+  let requestBody = null;
+  const fakeFetch = async (url, options) => {
+    requestUrl = String(url);
+    requestBody = JSON.parse(options.body);
+    return {
+      ok: true,
+      async json() {
+        return {
+          choices: [
+            {
+              message: {
+                content: "{\"title\":\"窗边小雨\",\"description\":\"雨贴在窗上，屋里的人把声音放轻了。\",\"location\":\"窗边\"}",
+              },
+            },
+          ],
+        };
+      },
+    };
+  };
+
+  const caption = await generateCaption(
+    { src: "https://pub-87e925c7796a4e538d6501e03f59add6.r2.dev/photo/P11.jpg" },
+    {
+      apiKey: "test-key",
+      model: "qwen-vl-plus",
+      aiBaseUrl: "https://llm-dhaso9vsg1r04xf0.cn-beijing.maas.aliyuncs.com/compatible-mode/v1",
+      fetchImpl: fakeFetch,
+    },
+  );
+
+  assert.equal(
+    requestUrl,
+    "https://llm-dhaso9vsg1r04xf0.cn-beijing.maas.aliyuncs.com/compatible-mode/v1/chat/completions",
+  );
+  assert.equal(requestBody.model, "qwen-vl-plus");
+  assert.equal(requestBody.messages[0].content[0].type, "text");
+  assert.equal(requestBody.messages[0].content[1].type, "image_url");
+  assert.equal(requestBody.messages[0].content[1].image_url.url, "https://pub-87e925c7796a4e538d6501e03f59add6.r2.dev/photo/P11.jpg");
+  assert.equal(caption.title, "窗边小雨");
+  assert.equal(caption.description, "雨贴在窗上，屋里的人把声音放轻了。");
 });
