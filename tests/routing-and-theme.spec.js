@@ -142,13 +142,29 @@ test("opens video modal with blurred backdrop and clear close control", async ({
     const backdrop = document.querySelector(".video-modal__backdrop");
     const frame = document.querySelector(".video-modal__frame");
     const iframe = document.querySelector(".video-modal__frame iframe");
+    const video = document.querySelector(".video-modal__frame video");
     const backdropStyle = getComputedStyle(backdrop);
     const frameStyle = getComputedStyle(frame);
     const close = document.querySelector(".video-modal__close");
     const closeStyle = getComputedStyle(close);
     const closeRect = close.getBoundingClientRect();
+    const modal = document.querySelector("[data-video-modal]");
+    const modalRect = modal.getBoundingClientRect();
+    const contentStyle = getComputedStyle(document.querySelector(".content"));
+    const sidebarStyle = getComputedStyle(document.querySelector(".sidebar"));
 
     return {
+      bodyHasVideoOpen: document.body.classList.contains("video-open"),
+      modalLeft: modalRect.left,
+      modalTop: modalRect.top,
+      modalRight: modalRect.right,
+      modalBottom: modalRect.bottom,
+      viewportWidth: window.innerWidth,
+      viewportHeight: window.innerHeight,
+      contentFilter: contentStyle.filter,
+      contentOpacity: contentStyle.opacity,
+      sidebarFilter: sidebarStyle.filter,
+      sidebarOpacity: sidebarStyle.opacity,
       backdropBackground: backdropStyle.backgroundColor,
       backdropFilter: backdropStyle.backdropFilter || backdropStyle.webkitBackdropFilter,
       frameBackground: frameStyle.backgroundColor,
@@ -159,19 +175,47 @@ test("opens video modal with blurred backdrop and clear close control", async ({
       closeBackground: closeStyle.backgroundColor,
       closeBorderWidth: closeStyle.borderTopWidth,
       iframeSrc: iframe?.getAttribute("src") ?? "",
+      videoSrc: video?.getAttribute("src") ?? "",
     };
   });
 
-  expect(modal.iframeSrc).toContain("player.bilibili.com");
+  expect(modal.videoSrc).toContain("/videos/%E5%8F%B2%E4%B8%8A%E6%9C%80%E5%A4%A7IPO.mp4");
+  expect(modal.bodyHasVideoOpen).toBe(true);
+  expect(modal.modalLeft).toBeLessThanOrEqual(1);
+  expect(modal.modalTop).toBeLessThanOrEqual(1);
+  expect(modal.modalRight).toBeGreaterThanOrEqual(modal.viewportWidth - 1);
+  expect(modal.modalBottom).toBeGreaterThanOrEqual(modal.viewportHeight - 1);
+  expect(modal.contentFilter).toContain("blur");
+  expect(Number(modal.contentOpacity)).toBeLessThanOrEqual(0.2);
+  expect(modal.sidebarFilter).toContain("blur");
+  expect(Number(modal.sidebarOpacity)).toBeLessThanOrEqual(0.2);
   expect(modal.backdropBackground).not.toBe("rgba(0, 0, 0, 0)");
   expect(modal.backdropFilter).toContain("blur");
   expect(modal.frameBackground).toBe("rgba(0, 0, 0, 0)");
   expect(modal.frameBoxShadow).toBe("none");
   expect(modal.frameBorderRadius).toBe("0px");
-  expect(modal.closeWidth).toBeGreaterThanOrEqual(40);
-  expect(modal.closeHeight).toBeGreaterThanOrEqual(40);
+  expect(modal.closeWidth).toBeGreaterThanOrEqual(56);
+  expect(modal.closeHeight).toBeGreaterThanOrEqual(56);
   expect(modal.closeBackground).not.toBe("rgba(0, 0, 0, 0)");
   expect(modal.closeBorderWidth).toBe("1px");
+});
+
+test("shows the pinned R2 video in the video grid", async ({ page }) => {
+  await page.goto("/?page=videos", { waitUntil: "domcontentloaded" });
+  await page.waitForSelector(".video-card");
+
+  const firstVideo = await page.evaluate(() => {
+    const firstCard = document.querySelector(".video-card");
+    return {
+      title: firstCard?.querySelector("strong")?.textContent?.trim(),
+      platform: firstCard?.querySelector(".video-pill")?.textContent?.trim(),
+      hasFallbackPoster: Boolean(firstCard?.querySelector(".video-media__fallback")),
+    };
+  });
+
+  expect(firstVideo.title).toBe("史上最大IPO");
+  expect(firstVideo.platform).toBe("R2");
+  expect(firstVideo.hasFallbackPoster).toBe(true);
 });
 
 test("defaults to light theme when no preference is stored", async ({ page }) => {
@@ -339,7 +383,7 @@ test("keeps the photo index grid aligned and uses balanced desktop width", async
     };
   });
 
-  expect(layout.columnCount).toBe(3);
+  expect(layout.columnCount).toBe(6);
   expect(Math.abs(layout.headerLeft - layout.gridLeft)).toBeLessThanOrEqual(1);
   expect(layout.gridWidth).toBeGreaterThanOrEqual(Math.min(1040, layout.sectionWidth - 2));
   expect(layout.gridWidth).toBeLessThanOrEqual(1060);
@@ -373,6 +417,7 @@ test("renders the photo index from the public manifest", async ({ page }) => {
     return {
       cardCount: document.querySelectorAll(".gallery-card").length,
       src: image?.currentSrc || image?.src,
+      objectFit: image ? getComputedStyle(image).objectFit : null,
       title: document.querySelector(".gallery-card__title")?.textContent?.trim(),
       description: document.querySelector(".gallery-card__description")?.textContent?.trim(),
     };
@@ -380,8 +425,60 @@ test("renders the photo index from the public manifest", async ({ page }) => {
 
   expect(manifestPhoto.cardCount).toBe(1);
   expect(manifestPhoto.src).toBe("https://pub-87e925c7796a4e538d6501e03f59add6.r2.dev/photo/P99.jpg");
+  expect(manifestPhoto.objectFit).toBe("contain");
   expect(manifestPhoto.title).toBe("窗边小雨");
   expect(manifestPhoto.description).toBe("雨贴在窗上，屋里的人把声音放轻了。");
+});
+
+test("keeps module headers and incomplete media rows on the same centered axis", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+
+  const pages = ["images", "videos", "articles", "contact"];
+  const geometry = {};
+
+  for (const pageName of pages) {
+    await page.goto(`/?page=${pageName}`, { waitUntil: "domcontentloaded" });
+    if (pageName === "images") await page.waitForSelector(".gallery-card");
+    if (pageName === "videos") await page.waitForSelector(".video-card");
+
+    geometry[pageName] = await page.evaluate((name) => {
+      const header = document.querySelector(".page-section.is-active .page-header, .page-section.is-active .gallery-index-header");
+      const content = name === "images"
+        ? document.querySelector("#images .mobile-image-list")
+        : name === "videos"
+          ? document.querySelector("#videos .video-page")
+          : name === "articles"
+            ? document.querySelector("#articles .articles-stack")
+            : document.querySelector("#contact .contact-links");
+      const lastCard = name === "images"
+        ? document.querySelector("#images .gallery-card:last-child")
+        : name === "videos"
+          ? document.querySelector("#videos .video-card:last-child")
+          : null;
+      const headerRect = header?.getBoundingClientRect();
+      const contentRect = content?.getBoundingClientRect();
+      const lastRect = lastCard?.getBoundingClientRect();
+
+      return {
+        headerLeft: headerRect?.left,
+        headerWidth: headerRect?.width,
+        contentCenter: contentRect ? contentRect.left + contentRect.width / 2 : null,
+        lastCardCenter: lastRect ? lastRect.left + lastRect.width / 2 : null,
+      };
+    }, pageName);
+  }
+
+  const axisLeft = geometry.images.headerLeft;
+  const axisWidth = geometry.images.headerWidth;
+  const axisCenter = geometry.images.contentCenter;
+
+  for (const pageName of pages) {
+    expect(Math.abs(geometry[pageName].headerLeft - axisLeft)).toBeLessThanOrEqual(1);
+    expect(Math.abs(geometry[pageName].headerWidth - axisWidth)).toBeLessThanOrEqual(1);
+    expect(Math.abs(geometry[pageName].contentCenter - axisCenter)).toBeLessThanOrEqual(1);
+  }
+
+  expect(Math.abs(geometry.images.lastCardCenter - axisCenter)).toBeLessThanOrEqual(1);
 });
 
 test("keeps site navigation text aligned after changing active page", async ({ page }) => {
@@ -1000,7 +1097,7 @@ test("uses the R2 portrait image on the CV about profile", async ({ page }) => {
     };
   });
 
-  expect(portrait.src).toBe("https://pub-87e925c7796a4e538d6501e03f59add6.r2.dev/photo/portrait.jpg");
+  expect(portrait.src).toBe("https://pub-87e925c7796a4e538d6501e03f59add6.r2.dev/photo/P47.jpg");
   expect(portrait.alt).toBe("马聪");
   expect(portrait.markerExists).toBe(false);
   expect(portrait.objectFit).toBe("cover");

@@ -218,6 +218,14 @@ const VIDEO_CACHE_KEY = "alano-video-cache-v1";
 const VIDEO_FETCH_TIMEOUT_MS = 8000;
 const BILIBILI_SPACE_URL = "https://space.bilibili.com/20221512";
 const PHOTO_ASSET_BASE_URL = "https://pub-87e925c7796a4e538d6501e03f59add6.r2.dev/photo";
+const PINNED_VIDEO_RECORDS = [
+  {
+    type: "r2",
+    platform: "R2",
+    title: "史上最大IPO",
+    src: "https://pub-87e925c7796a4e538d6501e03f59add6.r2.dev/videos/%E5%8F%B2%E4%B8%8A%E6%9C%80%E5%A4%A7IPO.mp4",
+  },
+];
 const FALLBACK_VIDEO_RECORDS = [
   {
     bvid: "BV1dQ4y1a7J4",
@@ -347,6 +355,18 @@ let dynamicVideos = [];
 let activeVideoBvid = "";
 
 function normalizeVideoRecord(video) {
+  if (video.src) {
+    return {
+      platform: video.platform || "R2",
+      title: video.title || "未命名视频",
+      duration: video.duration || "",
+      src: video.src,
+      embedUrl: video.src,
+      thumbnail: video.thumbnail || video.pic || "",
+      type: video.type || "video",
+    };
+  }
+
   const thumbnail = video.pic
     ? (video.pic.startsWith("http") ? video.pic.replace(/^http:/, "https:") : `https:${video.pic}`)
     : "";
@@ -361,8 +381,24 @@ function normalizeVideoRecord(video) {
   };
 }
 
+function getVideoIdentity(video) {
+  return video.src || video.bvid || video.embedUrl || video.title;
+}
+
+function withPinnedVideos(videos) {
+  const merged = [...PINNED_VIDEO_RECORDS.map(normalizeVideoRecord), ...videos];
+  const seen = new Set();
+
+  return merged.filter((video) => {
+    const identity = getVideoIdentity(video);
+    if (!identity || seen.has(identity)) return false;
+    seen.add(identity);
+    return true;
+  });
+}
+
 function getFallbackVideos() {
-  return FALLBACK_VIDEO_RECORDS.map(normalizeVideoRecord);
+  return withPinnedVideos(FALLBACK_VIDEO_RECORDS.map(normalizeVideoRecord));
 }
 
 function getCachedVideos() {
@@ -400,15 +436,19 @@ async function fetchVideosWithTimeout() {
 function closeVideoModal() {
   if (!videoModal || !videoModalFrame) return;
   videoModal.hidden = true;
+  document.body.classList.remove("video-open");
   videoModalFrame.innerHTML = "";
 }
 
 function openVideoModal(bvid) {
-  const video = dynamicVideos.find((item) => item.bvid === bvid);
+  const video = dynamicVideos.find((item) => (item.bvid || item.src) === bvid);
   if (!videoModal || !videoModalFrame || !video) return;
 
-  videoModalFrame.innerHTML = `<iframe src="${video.embedUrl}" title="${video.title}" allow="fullscreen; picture-in-picture" allowfullscreen loading="lazy"></iframe>`;
+  videoModalFrame.innerHTML = video.src
+    ? `<video src="${video.src}" title="${video.title}" controls autoplay playsinline></video>`
+    : `<iframe src="${video.embedUrl}" title="${video.title}" allow="fullscreen; picture-in-picture" allowfullscreen loading="lazy"></iframe>`;
   videoModal.hidden = false;
+  document.body.classList.add("video-open");
 }
 
 function renderVideoGrid(videos) {
@@ -422,15 +462,18 @@ function renderVideoGrid(videos) {
     card.type = "button";
     card.className = "video-card";
     card.setAttribute("aria-label", `播放${video.title}`);
-    card.addEventListener("click", () => openVideoModal(video.bvid));
+    card.addEventListener("click", () => openVideoModal(video.bvid || video.src));
     if (index === 0) {
-      activeVideoBvid = video.bvid;
+      activeVideoBvid = video.bvid || video.src;
     }
+    const imageMarkup = video.thumbnail
+      ? `<img src="${video.thumbnail}" alt="${video.title}视频封面" loading="lazy" referrerpolicy="no-referrer" onerror="this.closest('.video-card__media')?.classList.add('is-missing-image'); this.remove();">`
+      : "";
 
     card.innerHTML = `
       <span class="video-card__media video-media">
         ${index === 0 ? '<span class="video-card__badge">最新</span>' : ""}
-        <img src="${video.thumbnail}" alt="${video.title}视频封面" loading="lazy" referrerpolicy="no-referrer" onerror="this.closest('.video-card__media')?.classList.add('is-missing-image'); this.remove();">
+        ${imageMarkup}
         <span class="video-media__fallback" aria-hidden="true"></span>
       </span>
       <span class="video-card__body">
@@ -450,7 +493,7 @@ async function loadDynamicVideos() {
 
   const cachedVideos = getCachedVideos();
   if (cachedVideos.length) {
-    renderVideoGrid(cachedVideos);
+    renderVideoGrid(withPinnedVideos(cachedVideos));
     if (videoLoadingState) {
       videoLoadingState.hidden = true;
     }
@@ -464,7 +507,7 @@ async function loadDynamicVideos() {
   try {
     const payload = await fetchVideosWithTimeout();
     const videos = Array.isArray(payload)
-      ? payload.filter((video) => video?.bvid && video?.pic).map(normalizeVideoRecord)
+      ? withPinnedVideos(payload.filter((video) => video?.bvid && video?.pic).map(normalizeVideoRecord))
       : [];
 
     if (!videos.length) {
