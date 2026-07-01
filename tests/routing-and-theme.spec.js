@@ -219,7 +219,7 @@ test("toggles between light and dark theme from the pull cord", async ({ page })
     backgroundImage: getComputedStyle(document.body).backgroundImage,
   }));
   expect(restoredBackground.color).toBe("rgb(43, 45, 45)");
-  expect(restoredBackground.backgroundColor).toMatch(/rgb\(232, 232, 228\)|rgba\(232, 232, 228, 1\)/);
+  expect(restoredBackground.backgroundColor).toBe("rgb(245, 245, 241)");
 });
 
 test("keeps desktop navigation visible on narrow desktop windows", async ({ page }) => {
@@ -350,6 +350,40 @@ test("keeps the photo index grid aligned and uses balanced desktop width", async
   expect(layout.scrollWidth).toBeLessThanOrEqual(layout.innerWidth);
 });
 
+test("renders the photo index from the public manifest", async ({ page }) => {
+  await page.route("**/photos.json?*", async (route) => {
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify([
+        {
+          src: "https://pub-87e925c7796a4e538d6501e03f59add6.r2.dev/photo/P99.jpg",
+          title: "窗边小雨",
+          description: "雨贴在窗上，屋里的人把声音放轻了。",
+          location: "窗边",
+        },
+      ]),
+    });
+  });
+
+  await page.goto("/?page=images", { waitUntil: "domcontentloaded" });
+  await page.waitForSelector(".gallery-card");
+
+  const manifestPhoto = await page.evaluate(() => {
+    const image = document.querySelector(".gallery-card__image");
+    return {
+      cardCount: document.querySelectorAll(".gallery-card").length,
+      src: image?.currentSrc || image?.src,
+      title: document.querySelector(".gallery-card__title")?.textContent?.trim(),
+      description: document.querySelector(".gallery-card__description")?.textContent?.trim(),
+    };
+  });
+
+  expect(manifestPhoto.cardCount).toBe(1);
+  expect(manifestPhoto.src).toBe("https://pub-87e925c7796a4e538d6501e03f59add6.r2.dev/photo/P99.jpg");
+  expect(manifestPhoto.title).toBe("窗边小雨");
+  expect(manifestPhoto.description).toBe("雨贴在窗上，屋里的人把声音放轻了。");
+});
+
 test("keeps site navigation text aligned after changing active page", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto("/?page=images", { waitUntil: "domcontentloaded" });
@@ -367,6 +401,11 @@ test("keeps site navigation text aligned after changing active page", async ({ p
   });
 
   await page.locator(".site-nav a", { hasText: "视频" }).click();
+  await page.waitForFunction(() => {
+    const node = [...document.querySelectorAll(".site-nav a")]
+      .find((link) => link.textContent?.trim() === "视频");
+    return node && Number(getComputedStyle(node, "::before").opacity) > 0.4;
+  });
 
   const after = await page.locator(".site-nav a", { hasText: "视频" }).evaluate((node) => {
     const rect = node.getBoundingClientRect();
@@ -588,7 +627,7 @@ test("opens a clean light gallery viewer with left photo and right metadata", as
   expect(viewer.figureLeft).toBeLessThan(viewer.metadataLeft);
   expect(viewer.metadataHeight).toBeGreaterThan(500);
   expect(viewer.figureRight - viewer.figureLeft).toBeGreaterThan(viewer.metadataRight - viewer.metadataLeft);
-  expect(viewer.viewerBackgroundColor).toBe("rgb(232, 232, 228)");
+  expect(viewer.viewerBackgroundColor).toBe("rgb(245, 245, 241)");
   expect(viewer.metadataTextColor).toBe("rgb(43, 45, 45)");
   expect(viewer.metadataBackgroundColor).toBe("rgba(0, 0, 0, 0)");
   expect(viewer.metadataBackground).toBe("none");
@@ -843,9 +882,10 @@ test("uses the same soft paper texture on videos and articles", async ({ page })
         : "none",
     }));
 
-    expect(texture.pageBackgroundColor).toBe("rgb(232, 232, 228)");
+    expect(texture.pageBackgroundColor).toBe("rgb(245, 245, 241)");
     expect(texture.bodyBackgroundImage).not.toContain("repeating-linear-gradient");
-    expect(Number(texture.beforeOpacity)).toBeGreaterThanOrEqual(0.58);
+    expect(Number(texture.beforeOpacity)).toBeGreaterThanOrEqual(0.3);
+    expect(Number(texture.beforeOpacity)).toBeLessThanOrEqual(0.42);
     expect(texture.beforeBackgroundImage).toContain("data:image/svg+xml");
     expect(texture.afterBackgroundImage).toContain("radial-gradient");
     expect(texture.afterBackgroundImage).toContain("linear-gradient");

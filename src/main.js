@@ -503,7 +503,7 @@ window.addEventListener("keydown", (event) => {
 
 loadDynamicVideos();
 
-const images = [
+let images = [
   {
     src: `${PHOTO_ASSET_BASE_URL}/P1.JPG`,
     title: "楼间窄巷",
@@ -603,8 +603,9 @@ const imageWrap = document.querySelector(".gallery-image-wrap");
 const mobileImageList = document.querySelector(".mobile-image-list");
 
 function populateMobileImages() {
-  if (!mobileImageList || mobileImageList.children.length) return;
+  if (!mobileImageList) return;
 
+  mobileImageList.innerHTML = "";
   images.forEach((item, index) => {
     const card = document.createElement("figure");
     const button = document.createElement("button");
@@ -706,6 +707,27 @@ function showViewerImage(index) {
   updateViewerSize();
 }
 
+async function loadPhotoManifest() {
+  try {
+    const response = await fetch(`/photos.json?v=${Date.now()}`, { cache: "no-store" });
+    if (!response.ok) throw new Error("photo manifest unavailable");
+    const records = await response.json();
+    if (!Array.isArray(records) || !records.length) return;
+    images = records
+      .filter((record) => record?.src)
+      .map((record) => ({
+        ...record,
+        title: record.title || "新来的照片",
+        description: record.description || "先把它放在这里，等我慢慢写完这句话。",
+      }));
+    if (!images.length) return;
+    populateMobileImages();
+    showImage(Math.min(currentIndex, images.length - 1));
+  } catch {
+    populateMobileImages();
+  }
+}
+
 function openGalleryViewer(index) {
   if (!galleryViewer) return;
 
@@ -768,7 +790,7 @@ function updateFrameSize() {
   }
 }
 
-populateMobileImages();
+loadPhotoManifest();
 
 imagePrevious?.addEventListener("click", () => showImage(currentIndex - 1));
 imageNext?.addEventListener("click", () => showImage(currentIndex + 1));

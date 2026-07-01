@@ -4896,6 +4896,16 @@ html[data-theme="light"] .contact-link::before {
   width: min(100%, 360px);
 }
 
+#contact .contact-links {
+  width: min(100%, 318px);
+}
+
+@media (max-width: 420px) {
+  #contact .contact-links {
+    width: min(100%, 300px);
+  }
+}
+
 /* Final reading/gallery balance. */
 .content {
   width: min(1120px, 100%);

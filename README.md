@@ -39,6 +39,34 @@ npm run build
 npm run preview
 ```
 
+## 图片自动同步
+
+图片清单在 `public/photos.json`。页面会优先读取这个文件，所以以后新增 Cloudflare R2 图片时，只需要更新清单再构建。
+
+手动添加几张图片：
+
+```bash
+npm run photos:merge -- --photos P11.jpg,P12.jpg
+```
+
+从 R2 桶自动读取 `photo/` 目录：
+
+```bash
+$env:CLOUDFLARE_ACCOUNT_ID="你的 account id"
+$env:CLOUDFLARE_API_TOKEN="只读 R2 token"
+$env:R2_BUCKET_NAME="你的 bucket 名"
+npm run photos:merge -- --r2
+```
+
+同时让 OpenAI 按当前主页风格生成短标题和一句话介绍：
+
+```bash
+$env:OPENAI_API_KEY="你的 OpenAI key"
+npm run photos:merge -- --r2 --ai
+```
+
+脚本会保留已经手写过的标题和介绍，只给新增或空白的图片补文案。生成风格固定在 `scripts/photo-manifest.mjs` 的 `buildPhotoPrompt()`：朴素、短、有一点诗意，避免工具化和常见 AI 词。
+
 ## 部署
 
 项目可直接部署到 Cloudflare Pages：
